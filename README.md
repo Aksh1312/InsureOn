@@ -1,6 +1,6 @@
 # InsureOn — Income Protection Insurance for Delivery Gig Workers
 
-A parametric income loss insurance platform designed for delivery gig workers, providing coverage against natural disasters, extreme weather, and other disruptions.
+A parametric income loss insurance platform designed for delivery gig workers, providing coverage against natural disasters, extreme weather, and other disruptions — with smart work optimization guidance built in.
 
 ---
 
@@ -29,53 +29,87 @@ Zone data is sourced from **IMD (India Meteorological Department)** and **NDMA**
 
 ---
 
+## Worker Personas
+
+Based on real worker interviews, two primary personas have been identified:
+
+### Persona 1 — Part-time Worker "Ravi"
+- Works **10–25 hrs/week**
+- Earns approximately **₹4,000/week**
+- Willing to spend **₹100/week** on insurance
+- Treats delivery as supplementary income
+- Key concern: losing even partial income during disasters
+
+### Persona 2 — Full-time Worker "Karthik"
+- Works **40+ hrs/week**
+- Earns approximately **₹11,000/week**
+- Higher income at stake during disruptions
+- Treats delivery as primary income
+- Key concern: complete income wipeout during extended disasters
+
+---
+
 ## Tier Structure
 
 Workers are dynamically assigned to tiers based on their **4-week average weekly working hours**:
 
-| Tier | Weekly Working Hours | Worker Type |
-|---|---|---|
-| Tier 1 | 10–25 hrs/week | Part-time / Occasional |
-| Tier 2 | 26–40 hrs/week | Regular Worker |
-| Tier 3 | 41+ hrs/week | Full-time / Power Worker |
+| Tier | Weekly Working Hours | Worker Type | Real Persona |
+|---|---|---|---|
+| Tier 1 | 10–25 hrs/week | Part-time / Occasional | "Ravi" |
+| Tier 2 | 26–40 hrs/week | Regular Worker | In between |
+| Tier 3 | 41+ hrs/week | Full-time / Power Worker | "Karthik" |
 
 ---
 
-## Dynamic Coverage & Weekly Premium Structure
+## Revised Pricing Structure
 
-Coverage is calculated at **70% of the worker's average weekly income**, derived from their working hours. Premiums scale with both hours worked and zone risk.
+> Pricing is anchored to real worker data:
+> - Part-time worker (₹4,000/week income) → willing to pay **₹100/week**
+> - Full-time worker (₹11,000/week income) → scales proportionally
+> - Coverage = **70% of average weekly income**
+> - Premium = **~2.5% of coverage amount** (Zone A base)
 
-### 🔵 Tier 1 — Part-time (10–25 hrs/week)
+### Premium Rate by Zone
 
-| Weekly Hours | Est. Weekly Income | Coverage Amount | Premium Zone A | Premium Zone B | Premium Zone C |
-|---|---|---|---|---|---|
-| 10–15 hrs | ₹1,000–₹2,000 | ₹1,500 | ₹25/week | ₹18/week | ₹12/week |
-| 16–20 hrs | ₹2,001–₹3,500 | ₹2,750 | ₹40/week | ₹28/week | ₹20/week |
-| 21–25 hrs | ₹3,501–₹5,000 | ₹4,250 | ₹55/week | ₹38/week | ₹27/week |
-
-### 🟡 Tier 2 — Regular (26–40 hrs/week)
-
-| Weekly Hours | Est. Weekly Income | Coverage Amount | Premium Zone A | Premium Zone B | Premium Zone C |
-|---|---|---|---|---|---|
-| 26–30 hrs | ₹5,001–₹7,000 | ₹6,000 | ₹85/week | ₹60/week | ₹42/week |
-| 31–35 hrs | ₹7,001–₹9,000 | ₹8,000 | ₹110/week | ₹78/week | ₹55/week |
-| 36–40 hrs | ₹9,001–₹11,000 | ₹10,000 | ₹135/week | ₹95/week | ₹67/week |
-
-### 🔴 Tier 3 — Full-time (41+ hrs/week)
-
-| Weekly Hours | Est. Weekly Income | Coverage Amount | Premium Zone A | Premium Zone B | Premium Zone C |
-|---|---|---|---|---|---|
-| 41–50 hrs | ₹11,001–₹14,000 | ₹12,500 | ₹170/week | ₹120/week | ₹85/week |
-| 51–60 hrs | ₹14,001–₹18,000 | ₹16,000 | ₹210/week | ₹148/week | ₹105/week |
-| 60+ hrs | ₹18,001+ | ₹20,000 | ₹260/week | ₹183/week | ₹130/week |
-
-### Premium as % of Weekly Coverage by Zone
-
-| Zone | Premium Rate |
+| Zone | Premium as % of Coverage |
 |---|---|
-| Zone A (High Risk) | 1.5–2.0% of coverage |
-| Zone B (Moderate) | 1.0–1.5% of coverage |
-| Zone C (Low Risk) | 0.7–1.0% of coverage |
+| Zone A (High Risk) | 2.5% |
+| Zone B (Moderate Risk) | 1.7% |
+| Zone C (Low Risk) | 1.2% |
+
+---
+
+### Tier 1 — Part-time (10–25 hrs/week)
+
+| Weekly Hours | Est. Weekly Income | Coverage (70%) | Premium Zone A | Premium Zone B | Premium Zone C |
+|---|---|---|---|---|---|
+| 10–15 hrs | ₹1,500–₹2,500 | ₹1,750 | ₹44/week | ₹30/week | ₹21/week |
+| 16–20 hrs | ₹2,501–₹3,500 | ₹2,450 | ₹61/week | ₹42/week | ₹29/week |
+| 21–25 hrs | ₹3,501–₹4,500 | ₹2,800 | **₹100/week** | ₹68/week | ₹48/week |
+
+> Ravi (₹4,000/week, Zone A) falls in the 21–25 hrs band → **₹100/week premium** — matches his willingness to pay exactly.
+
+---
+
+### Tier 2 — Regular (26–40 hrs/week)
+
+| Weekly Hours | Est. Weekly Income | Coverage (70%) | Premium Zone A | Premium Zone B | Premium Zone C |
+|---|---|---|---|---|---|
+| 26–30 hrs | ₹4,501–₹6,500 | ₹3,850 | ₹137/week | ₹93/week | ₹66/week |
+| 31–35 hrs | ₹6,501–₹8,500 | ₹5,250 | ₹175/week | ₹119/week | ₹84/week |
+| 36–40 hrs | ₹8,501–₹10,500 | ₹6,650 | ₹210/week | ₹143/week | ₹101/week |
+
+---
+
+### Tier 3 — Full-time (41+ hrs/week)
+
+| Weekly Hours | Est. Weekly Income | Coverage (70%) | Premium Zone A | Premium Zone B | Premium Zone C |
+|---|---|---|---|---|---|
+| 41–50 hrs | ₹10,501–₹12,500 | ₹7,700 | ₹193/week | ₹131/week | ₹92/week |
+| 51–60 hrs | ₹12,501–₹16,000 | ₹9,800 | ₹245/week | ₹167/week | ₹118/week |
+| 60+ hrs | ₹16,001+ | ₹11,200+ | ₹280+/week | ₹190+/week | ₹134+/week |
+
+> Karthik (₹11,000/week, Zone A) falls in the 41–50 hrs band → **₹193/week premium** — proportional and sustainable.
 
 ---
 
@@ -88,25 +122,111 @@ Coverage is calculated at **70% of the worker's average weekly income**, derived
 | Coastal / flood-prone pincode | +20–30% loading |
 | Shorter waiting period opted (12hr vs 48hr) | +15% loading |
 | Annual payment upfront | –8% discount |
+| Risk score "Low" category | –15% discount |
+| Risk score "Very High" category | +40% loading |
 
 > **Loading** = extra charge added due to higher risk  
 > **Discount** = reduction applied for lower risk or loyalty
 
 ---
 
-## Dynamic Reassignment Logic
+## Predictive Risk Modeling — Persona Specific
 
-Every Monday, the system recalculates each worker's tier and coverage:
+Each worker gets a **personal risk score** calculated weekly. This score adjusts their premium multiplier on top of the base tier rate.
+
+### Step 1: Risk Factor Scoring
+
+| Factor | Low Risk (1) | Medium Risk (2) | High Risk (3) | Weight |
+|---|---|---|---|---|
+| Zone | Zone C | Zone B | Zone A | 30% |
+| Pincode disaster frequency | <2 days/yr | 2–5 days/yr | 5+ days/yr | 25% |
+| Weekly working hours | <20 hrs | 20–40 hrs | 40+ hrs | 20% |
+| Work time of day | Afternoon | Morning | Night / Rain hours | 15% |
+| Past claim history | 0 claims | 1 claim | 2+ claims | 10% |
+
+### Step 2: Weighted Risk Score Formula
+
+```
+Risk Score = (Zone × 0.30) + (Pincode Freq × 0.25) + (Work Hours × 0.20)
+           + (Work Time × 0.15) + (Claim History × 0.10)
+```
+
+### Step 3: Risk Category & Premium Multiplier
+
+| Risk Score | Category | Premium Multiplier |
+|---|---|---|
+| 1.0 – 1.5 | 🟢 Low Risk | 0.85× |
+| 1.6 – 2.0 | 🟡 Medium Risk | 1.00× |
+| 2.1 – 2.5 | 🟠 High Risk | 1.20× |
+| 2.6 – 3.0 | 🔴 Very High Risk | 1.40× |
+
+---
+
+### Persona Risk Score Examples
+
+#### Ravi (Part-time, Chennai — Zone A)
+
+| Factor | Score | Weight | Weighted |
+|---|---|---|---|
+| Zone A | 3 | 30% | 0.90 |
+| Pincode (flood-prone) | 3 | 25% | 0.75 |
+| Work Hours (20 hrs) | 1 | 20% | 0.20 |
+| Work Time (afternoon) | 1 | 15% | 0.15 |
+| Claim History (0 claims) | 1 | 10% | 0.10 |
+| **Total Risk Score** | | | **2.10 → 🟠 High Risk** |
+
+```
+Ravi's Final Premium = ₹100 × 1.20 = ₹120/week
+```
+
+> Ravi is in a high-risk zone but works fewer hours in the afternoon — partially offsets the zone risk.
+
+---
+
+#### Karthik (Full-time, Chennai — Zone A)
+
+| Factor | Score | Weight | Weighted |
+|---|---|---|---|
+| Zone A | 3 | 30% | 0.90 |
+| Pincode (flood-prone) | 3 | 25% | 0.75 |
+| Work Hours (45 hrs) | 3 | 20% | 0.60 |
+| Work Time (night shifts) | 3 | 15% | 0.45 |
+| Claim History (1 claim) | 2 | 10% | 0.20 |
+| **Total Risk Score** | | | **2.90 → 🔴 Very High Risk** |
+
+```
+Karthik's Final Premium = ₹193 × 1.40 = ₹270/week
+```
+
+> Karthik works full-time night shifts in a flood zone with a prior claim — very high risk profile.
+
+---
+
+### ML Model Upgrade Path
+
+| Stage | Approach |
+|---|---|
+| Launch (0–6 months) | Rule-based weighted scoring above |
+| Growth (6–12 months) | Logistic Regression / Decision Tree on claims data |
+| Scale (12+ months) | XGBoost / Random Forest with pincode-level granularity |
+
+> Every week of data collected today becomes training data for the ML model tomorrow.
+
+---
+
+## Dynamic Weekly Reassignment
 
 ```
 Every Monday:
-→ System checks last 4-week average working hours
-→ Assigns worker to appropriate Tier + Hour Band
-→ Calculates new coverage amount (70% of avg weekly income)
-→ Applies Zone loading (A / B / C)
-→ Charges weekly premium
-→ Issues digital policy for that week
-→ If disaster event triggers → checks 5-day loss rule → pays out
+→ Pull worker's last 4-week average hours and earnings from platform API
+→ Pull latest IMD / NDMA risk data for their pincode
+→ Recalculate personal Risk Score
+→ Assign Tier + Hour Band
+→ Apply Zone rate + Risk Score multiplier
+→ Apply any loadings or discounts
+→ Charge final weekly premium
+→ Issue digital policy for that week
+→ Send worker their SmartWork tips for the week (see below)
 ```
 
 ### Tier Transition Rules
@@ -120,7 +240,7 @@ Every Monday:
 
 ---
 
-## 🛡️ Claim Eligibility Rules
+## Claim Eligibility Rules
 
 A claim is valid when **all three** conditions are met:
 
@@ -134,9 +254,9 @@ A claim is valid when **all three** conditions are met:
 Baseline Daily Income = Total earnings over last 4–8 weeks ÷ Number of working days
 ```
 
-**Example:**  
-Worker earned ₹24,000 over 4 weeks across 24 working days → Baseline = ₹1,000/day  
-Claim triggers if they earn below ₹500/day (50%) for 5+ consecutive days.
+**Example (Ravi):**
+Earned ₹16,000 over 4 weeks across 20 working days → Baseline = ₹800/day
+Claim triggers if he earns below ₹400/day for 5+ consecutive days.
 
 ---
 
@@ -153,6 +273,137 @@ Claim triggers if they earn below ₹500/day (50%) for 5+ consecutive days.
 
 ---
 
+# SmartWork — Work Optimization Feature
+
+GigShield doesn't just protect workers — it **actively helps them earn more** by telling them the best times and conditions to work each week.
+
+---
+
+## What SmartWork Does
+
+Every week, each worker receives personalized guidance on:
+- **Best time slots** to work for maximum orders
+- **High-earning zones** in their city this week
+- **Weather windows** — safe periods before/after predicted rain
+- **Surge period alerts** — festivals, events, weekends with high demand
+- **Risk advisories** — when NOT to work to stay safe
+
+---
+
+## SmartWork for Part-time Workers (Tier 1)
+
+Since part-time workers have limited hours, SmartWork helps them **maximize earnings within their available time**:
+
+```
+SmartWork Tips — This Week
+
+Best Time Slots:
+   → Weekday evenings 7–9 PM   (dinner rush, highest order density)
+   → Saturday 12–2 PM          (lunch peak, strong surge)
+   → Sunday 7–10 PM            (highest surge of the week)
+
+High-Earning Zones This Week:
+   → Areas with high restaurant density (short distances, more orders/hr)
+   → Residential zones near commercial hubs (high drop-off demand)
+
+Weather Window:
+   → Check rain forecast before heading out
+   → Avoid working during active rain (low orders, high personal risk)
+   → Clear weather days = best earning opportunity
+
+This Week's Target:
+   → Concentrate hours in recommended slots
+   → Projected earnings: 10–15% above your usual weekly average
+
+Risk Advisory:
+   → IMD alerts active in your zone — avoid working during alert hours
+   → Wrap up before predicted weather events
+```
+
+---
+
+## SmartWork for Full-time Workers (Tier 3)
+
+Since full-time workers are already putting in long hours, SmartWork helps them **work smarter, not just harder**:
+
+```
+SmartWork Tips — This Week
+
+Optimal Shift Structure:
+   → Split shifts recommended: Late morning + Evening
+   → Avoid mid-afternoon (low order density, high fuel cost per order)
+   → Night shifts during weekends = highest earning potential
+
+Zone Rotation Strategy:
+   → Weekdays → Office and commercial zones (lunch + corporate orders)
+   → Evenings → Residential and dining areas (dinner rush)
+   → Weekends → High-footfall zones (shopping, entertainment areas)
+
+Weather Strategy:
+   → Light rain = surge pricing opportunity (worth staying out)
+   → Heavy rain / storm = stop immediately, safety first
+   → Plan rest/recovery after high-intensity rain-surge shifts
+
+Earnings Optimization:
+   → You don't need to work more hours — just shift when you work
+   → Following zone rotation can add ₹1,000–₹2,000/week
+     without adding a single extra hour
+
+Risk Advisory:
+   → Active weather watch in your area this week
+   → Keep insurance active — higher payout probability this week
+```
+
+---
+
+## How SmartWork Data is Generated
+
+| Data Source | Used For |
+|---|---|
+| Platform order history (Swiggy / Zomato / Dunzo API) | Peak hour and zone identification |
+| IMD weather forecast API | Rain and storm windows |
+| City event calendar | Festivals, matches, local events causing surges |
+| Worker's own past earnings data | Personalized slot recommendations |
+| NDMA alerts | Risk advisories and safety warnings |
+
+---
+
+## SmartWork Delivery Channels
+
+| Channel | When |
+|---|---|
+| Push notification | Every Monday morning — weekly tips |
+| In-app dashboard | Live surge zone map, updated daily |
+| SMS alert | Urgent risk advisories (IMD red/orange alerts) |
+| Weekly earnings report | Actual earnings vs SmartWork projected earnings |
+
+---
+
+## SmartWork Impact on Risk Score & Premium
+
+Workers who follow SmartWork safety tips get rewarded with a **lower risk score over time**, which directly reduces their weekly premium:
+
+| Worker Behavior | Risk Score Impact |
+|---|---|
+| Follows weather avoidance tips | –0.2 risk score reduction |
+| Avoids working during IMD alerts | –0.3 risk score reduction |
+| Consistently works recommended safe slots | Eligible for **"Safe Worker" discount (–5% premium)** |
+
+> Workers who follow SmartWork tips are statistically less likely to be caught in disaster zones → lower personal risk → lower premium over time.
+
+---
+
+## SmartWork — Summary of Benefits
+
+| Benefit | For Part-time Worker | For Full-time Worker |
+|---|---|---|
+| Earnings boost | +10–15% by choosing right hours | +₹1,000–₹2,000/week by shifting zones |
+| Safety | Avoid disaster-prone hours | Early warning before storms |
+| Premium savings | Safe behaviour reduces risk score | Safe behaviour reduces risk score |
+| Effort required | Zero — tips delivered every Monday | Zero — tips delivered every Monday |
+
+---
+
 ## Financial Sustainability Targets
 
 | Metric | Target |
@@ -160,7 +411,7 @@ Claim triggers if they earn below ₹500/day (50%) for 5+ consecutive days.
 | Loss Ratio | 55–65% |
 | Expense Ratio | ~25% |
 | Profit Margin | 10–15% |
-| Reinsurance | GIC Re / Munich Re for catastrophic events |
+| Reinsurance Partner | GIC Re / Munich Re |
 
 ---
 
@@ -168,10 +419,17 @@ Claim triggers if they earn below ₹500/day (50%) for 5+ consecutive days.
 
 | Advantage | Reason |
 |---|---|
-| **Fair** | Workers pay exactly for the coverage they need |
-| **Fraud resistant** | Coverage based on verified platform data, not self-declaration |
+| **Priced for real workers** | ₹100/week anchor matches actual willingness to pay |
+| **Fair & proportional** | Coverage and premium scale with actual income |
+| **Fraud resistant** | Coverage based on verified platform data |
+| **Personalised** | Risk score adjusts premium per individual worker |
+| **Value beyond insurance** | SmartWork helps workers earn more, not just get covered |
 | **Scalable** | Fully automatable with gig platform API integration |
-| **Flexible** | Adjusts naturally to seasonal and weekly work patterns |
-| **Affordable** | Part-timers are never overcharged |
+| **ML-ready** | Rule-based today, upgrades to ML model after 6 months |
 
 ---
+
+
+## 📄 License
+
+This project is proprietary. All rights reserved.
