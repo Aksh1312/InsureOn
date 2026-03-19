@@ -56,47 +56,55 @@ Workers are dynamically assigned to tiers based on their **4-week average weekly
 ---
 
 ## Pricing Structure
-
+ 
 > Coverage = **70% of average weekly income** | Premium = **~2.5% of coverage** (Zone A base)
 > Maximum weekly income in Tier 3 capped at **₹12,000/week (₹48,000/month)**
-
+ 
 ### Premium Rate by Zone
-
+ 
 | Zone | Premium as % of Coverage |
 |---|---|
 | Zone A (High Risk) | 2.5% |
 | Zone B (Moderate Risk) | 1.7% |
 | Zone C (Low Risk) | 1.2% |
-
-### 🔵 Tier 1 — Part-time (10–25 hrs/week)
-
+ 
+---
+ 
+### Tier 1 — Part-time (₹1,500–₹4,500/week)
+ 
 | Weekly Hours | Est. Weekly Income | Coverage (70%) | Zone A | Zone B | Zone C |
 |---|---|---|---|---|---|
-| 10–15 hrs | ₹1,500–₹2,500 | ₹1,750 | ₹44/week | ₹30/week | ₹21/week |
-| 16–20 hrs | ₹2,501–₹3,500 | ₹2,450 | ₹61/week | ₹42/week | ₹29/week |
-| 21–25 hrs | ₹3,501–₹4,500 | ₹2,800 | **₹100/week** | ₹68/week | ₹48/week |
-
-> Ravi (₹4,000/week, Zone A) → **₹100/week** — matches willingness to pay exactly.
-
-### 🟡 Tier 2 — Regular (26–40 hrs/week)
-
+| 10–15 hrs | ₹1,500–₹2,500 | ₹1,400 | ₹35/week | ₹25/week | ₹15/week |
+| 16–20 hrs | ₹2,501–₹3,500 | ₹2,100 | ₹50/week | ₹35/week | ₹25/week |
+| 21–25 hrs | ₹3,501–₹4,500 | ₹2,800 | ₹70/week | ₹50/week | ₹35/week |
+ 
+---
+ 
+### Tier 2 — Regular (₹4,501–₹8,000/week)
+ 
 | Weekly Hours | Est. Weekly Income | Coverage (70%) | Zone A | Zone B | Zone C |
 |---|---|---|---|---|---|
-| 26–30 hrs | ₹4,501–₹6,500 | ₹3,850 | ₹137/week | ₹93/week | ₹66/week |
-| 31–35 hrs | ₹6,501–₹8,500 | ₹5,250 | ₹175/week | ₹119/week | ₹84/week |
-| 36–40 hrs | ₹8,501–₹10,500 | ₹6,650 | ₹210/week | ₹143/week | ₹101/week |
-
-### 🔴 Tier 3 — Full-time (41+ hrs/week)
-
+| 26–30 hrs | ₹4,501–₹5,500 | ₹3,500 | ₹90/week | ₹60/week | ₹40/week |
+| 31–35 hrs | ₹5,501–₹6,750 | ₹4,300 | ₹110/week | ₹75/week | ₹50/week |
+| 36–40 hrs | ₹6,751–₹8,000 | ₹5,150 | ₹130/week | ₹90/week | ₹60/week |
+ 
+> Ravi (₹4,000/week, Zone A) falls at the entry of Tier 2 → **~₹90/week base premium** — close to his stated willingness of ₹100/week.
+ 
+---
+ 
+### Tier 3 — Full-time (₹8,001–₹12,000+/week)
+ 
+> Maximum weekly income capped at **₹12,000/week (₹48,000/month)**
+ 
 | Weekly Hours | Est. Weekly Income | Coverage (70%) | Zone A | Zone B | Zone C |
 |---|---|---|---|---|---|
-| 41–50 hrs | ₹10,501–₹11,000 | ₹7,500 | ₹190/week | ₹130/week | ₹90/week |
-| 51–60 hrs | ₹11,001–₹11,500 | ₹7,850 | ₹195/week | ₹135/week | ₹95/week |
-| 61–70 hrs | ₹11,501–₹12,000 | ₹8,200 | ₹205/week | ₹140/week | ₹100/week |
+| 41–50 hrs | ₹8,001–₹9,500 | ₹6,100 | ₹150/week | ₹105/week | ₹75/week |
+| 51–60 hrs | ₹9,501–₹11,000 | ₹7,150 | ₹180/week | ₹120/week | ₹85/week |
+| 61–70 hrs | ₹11,001–₹12,000 | ₹8,050 | ₹200/week | ₹135/week | ₹95/week |
 | 71+ hrs | ₹12,000+ | ₹8,400 | ₹210/week | ₹145/week | ₹100/week |
-
-> Karthik (₹11,000/week, Zone A) → **₹190/week** — proportional and sustainable.
-
+ 
+> Karthik (₹11,000/week, Zone A) falls in the 61–70 hrs band → **₹200/week base premium** — proportional and sustainable.
+ 
 ---
 
 ## Premium Loading & Discounts
