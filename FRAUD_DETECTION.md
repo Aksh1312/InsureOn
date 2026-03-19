@@ -22,7 +22,10 @@ Raw Signals
     ├── Income Pattern Analysis
     ├── Zone-Based Correlation
     ├── Nearby Zone Cross-Validation
-    └── Behavioral Baseline Deviation
+    ├── Behavioral Baseline Deviation
+    ├── Device Integrity Signals
+    ├── Network Consistency Signals
+    └── Mobility Realism Signals
             │
             ▼
     Logistic Regression Model
@@ -32,7 +35,7 @@ Raw Signals
     Fraud Probability Score  ──►  Graph-Based Fraud Ring Detection
             │
             ▼
-    Decision Engine
+    Decision Engine (UX-Aware: Delay, not Deny)
 ```
 
 ---
@@ -226,6 +229,156 @@ Worker D is an outlier and is flagged for review.
 
 ---
 
+## Adversarial Defense — Anti-GPS Spoofing
+
+GPS alone is easy to fake. The system does not trust declared location; it verifies **behavioral reality** across multiple hard-to-fake signals simultaneously.
+
+### Real Worker vs. Spoofer: Signal Comparison
+
+| Signal | Genuine Worker | GPS Spoofer |
+|---|---|---|
+| Movement before disruption | Active, moving | Static at home |
+| Order acceptance attempts | Present | Absent |
+| Network quality | Degraded / unstable | Clean connection |
+| Activity drop pattern | Gradual | Instant, perfect zero |
+| Nearby worker behavior | Similar struggle | Isolated pattern |
+| Sensor consistency | GPS matches accelerometer | Mismatch detected |
+
+The core principle shifts from:
+```
+trust(GPS)
+```
+to:
+```
+trust(behavior + network + platform_activity + mobility_pattern + device_integrity)
+```
+
+---
+
+### Layer 9 — Device Integrity Signals
+
+Spoofing apps and fake environments leave detectable traces at the device level.
+
+**Checks Performed:**
+- Mock location / developer mode detection (Android)
+- Emulator environment detection
+- App integrity validation
+- Sensor mismatch: GPS vs. accelerometer disagreement
+
+**Example:**
+```
+If GPS reports "moving through flood zone"
+   AND accelerometer reports "stationary":
+       → flag: sensor_mismatch = TRUE  🚨
+```
+
+---
+
+### Layer 10 — Network Consistency Signals
+
+GPS coordinates can be spoofed, but network-level signals are significantly harder to fake.
+
+**Checks Performed:**
+- IP geolocation vs. GPS location mismatch
+- Sudden IP address jumps (VPN switching)
+- ISP consistency across session
+- Cell tower triangulation (where available)
+- Network quality during claimed disaster period
+
+**Example:**
+
+| Signal | Value | Verdict |
+|---|---|---|
+| GPS location | Chennai flood zone | — |
+| IP geolocation | Home WiFi, safe area | 🚨 Mismatch |
+
+**During genuine disasters**, network quality degrades: high packet loss, frequent disconnects, app timeouts. A claimant with a **perfect, stable internet connection** during a claimed flood event is a strong fraud signal.
+
+---
+
+### Layer 11 — Mobility Realism Signals
+
+Real delivery workers follow predictable, road-constrained movement patterns. Spoofers typically reveal themselves through unnatural movement.
+
+**Real Worker Characteristics:**
+- Continuous movement with natural stop/start patterns
+- Routes follow actual road networks
+- Consistent speed ranges for vehicle type
+
+**Spoofer Characteristics:**
+- Teleportation between locations
+- Static position with declared GPS movement
+- Unnatural path geometry (cuts through buildings, water, etc.)
+
+**Checks Performed:**
+- Speed anomaly detection (impossibly fast movement)
+- Path realism scoring against road network
+- Movement continuity analysis
+
+---
+
+### Peer Consistency Cross-Check
+
+Comparing workers in the same zone during the same event exposes coordinated fraud rings:
+
+| Signal | Genuine Disaster | Fraud Ring |
+|---|---|---|
+| Movement patterns | Chaotic, diverse | Suspiciously similar |
+| Network quality | Degraded | Stable |
+| Behavior profiles | Varied | Near-identical |
+
+---
+
+### Telegram / Coordination Detection
+
+Fraud rings coordinating on messaging platforms (e.g., Telegram) leave detectable patterns in the claims data:
+
+- Synchronized claim submission timing (within minutes)
+- Identical behavioral profiles across unrelated workers
+- Matching spoofing artifacts (same mock location app signatures)
+- Identical income drop curves
+
+These patterns create strong edges in the fraud ring graph and elevate cluster risk scores significantly.
+
+---
+
+## UX Balance — Protecting Honest Workers
+
+Fraud detection must never punish legitimate claimants. The system is designed around the principle: **delay, not deny**.
+
+### Claim Handling Flow
+
+**🟢 Low Risk — Instant auto-payout**
+No friction. Claim approved automatically.
+
+**🟡 Medium Risk — Light passive verification**
+- Silent background data check (no worker action required)
+- Optional soft prompt: *"Were you trying to go online during the disruption?"*
+- No blocking; claim held briefly while checks run
+
+**🔴 High Risk — Delayed payout with deeper checks**
+- Payout delayed, not denied
+- App activity logs reviewed
+- Session integrity validated
+- Worker informed transparently
+
+### Worker-Facing Communication
+
+Claims under review receive a clear, non-alarming message:
+
+> *"Your claim is being processed due to network inconsistencies. No action needed. Expected resolution: 24–48 hours."*
+
+This avoids frustration, maintains trust, and does not signal to fraudsters exactly what triggered the review.
+
+### Key UX Principles
+
+- Never block instantly unless confidence is very high
+- Verify silently wherever possible
+- Always keep the worker informed
+- Prefer delayed payout over outright denial for ambiguous cases
+
+---
+
 ## Final Fraud Probability Score (Logistic Regression)
 
 All feature signals feed into a logistic regression model that outputs a fraud probability between 0 and 1.
@@ -239,21 +392,27 @@ P(fraud) = sigmoid(
   + w3 * zone_claim_pattern_score
   + w4 * nearby_zone_behavior_score
   + w5 * behavioral_deviation_score
+  + w6 * device_integrity_score
+  + w7 * network_consistency_score
+  + w8 * mobility_realism_score
   + b
 )
 ```
 
-**Weights `w1–w5` and bias `b` are trained on labelled historical claims** (approved vs. fraudulent). As more claims are processed and labelled, the model retrains and improves — creating an improving feedback loop over time.
+**Weights `w1–w8` and bias `b` are trained on labelled historical claims** (approved vs. fraudulent). As more claims are processed and labelled, the model retrains and improves — creating an improving feedback loop over time.
 
 **Example current weight distribution:**
 
 | Feature | Approximate Weight |
 |---|---|
-| Worker history | 0.30 |
-| Event verification | 0.20 |
-| Zone claim pattern | 0.20 |
+| Worker history | 0.20 |
+| Event verification | 0.15 |
+| Zone claim pattern | 0.15 |
 | Behavioral deviation | 0.15 |
 | Fraud ring signals | 0.15 |
+| Device integrity | 0.10 |
+| Network consistency | 0.10 |
+| Mobility realism | 0.05 |
 
 **Decision Thresholds:**
 
@@ -342,7 +501,13 @@ High-scoring clusters are escalated for investigation regardless of individual P
 | Graph-based fraud ring detection | Catches coordinated organized fraud |
 | Zone + neighboring zone correlation | Geographic cross-validation of claims |
 | Peer comparison | Flags statistical outliers within cohorts |
+| Device integrity checks | Detects mock location apps and emulators |
+| Network consistency analysis | Catches IP/GPS mismatches and VPN use |
+| Mobility realism scoring | Identifies teleportation and unnatural paths |
+| UX-aware decision engine | Protects honest workers via delay-not-deny |
 
-The combination of **parametric triggers + behavioral analytics + geographic correlation + graph-based ring detection + a continuously improving ML model** makes this system extremely difficult to defraud at scale.
+The combination of **parametric triggers + behavioral analytics + geographic correlation + graph-based ring detection + adversarial anti-spoofing layers + a continuously improving ML model** makes this system extremely difficult to defraud at scale, while keeping the experience fair and frictionless for honest workers.
 
 ---
+
+*Document version: 2.0 — Gig Worker Insurance Platform*
