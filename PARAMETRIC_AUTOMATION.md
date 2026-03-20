@@ -1,10 +1,14 @@
 # InsureOn — Parametric Automation Module
 
+This is the engine room of InsureOn—where automation takes over, so workers don’t have to worry about paperwork or delays. Our system is always on, always watching for trouble, and always ready to help when it matters most.
+
 The operational core of the InsureOn platform. This module automatically detects weather disruptions, opens claims for affected workers, monitors their income, and disburses payouts — with zero manual intervention from anyone.
 
 ---
 
 ## What This Module Does
+
+When disaster strikes, our system jumps into action. No forms, no calls, no hassle. If you’re covered and affected, we’ll know—and we’ll get you paid, fast.
 
 When a natural disaster or severe weather event hits a city where workers are registered:
 
@@ -19,6 +23,8 @@ The worker never files a claim. The system handles everything. Target payout is 
 
 ## How the Three Sub-modules Fit Together
 
+Each sub-module is like a member of a well-coordinated team, handling detection, monitoring, and payouts so nothing falls through the cracks.
+
 | Sub-module | Role | Function |
 |---|---|---|
 | Sub-module 1 — Real-time Trigger Monitoring | Detects the disaster | Calls IMD APIs every 15 minutes, classifies alert level, matches to worker zones |
@@ -29,9 +35,13 @@ The worker never files a claim. The system handles everything. Target payout is 
 
 ## Sub-module 1 — Real-time Trigger Monitoring
 
+We keep an eye on the weather, so you don’t have to. Our background service checks for trouble every 15 minutes, making sure no event goes unnoticed.
+
 A background service runs on the server every **15 minutes**. It calls two IMD APIs for every district where workers are registered, classifies the alert level, and fires a trigger if the threshold is met.
 
 ### IMD APIs Used
+
+We use both forecast and real-time data to catch events as they happen and to warn workers in advance. If the main API is down, we have a backup ready—because reliability matters.
 
 | API | Endpoint | Purpose |
 |---|---|---|
@@ -46,6 +56,8 @@ Both APIs are called together. Nowcast catches events already in progress. Warni
 ---
 
 ### Alert Color Classification
+
+The color code in the IMD response is our “go/no-go” signal. Red means everyone’s affected, Orange is for the riskiest zones, and Yellow is logged for review. We only act when it really matters.
 
 Every IMD API response includes a `color` field. This is the single most important value in the trigger system.
 
@@ -63,6 +75,8 @@ Every IMD API response includes a `color` field. This is the single most importa
 ---
 
 ### District obj_id Mapping
+
+Every city is mapped to its IMD district ID, so we know exactly where the trouble is. As we grow, we keep this list up to date.
 
 IMD identifies each district by a numeric ID. The platform maintains a lookup table mapping registered cities to their IMD district IDs:
 
@@ -83,11 +97,15 @@ New cities are added to this table as the platform expands.
 
 ### Deduplication
 
+We don’t want to spam the system with duplicate triggers. Only one alert per district per day gets through, so we stay focused on real, actionable events.
+
 Since the poller runs every 15 minutes, a single storm lasting 6 hours would generate 24 triggers for the same district without deduplication. The system checks before firing: has this district already been triggered today? If yes, it skips. One trigger record per district per day maximum.
 
 ---
 
 ## Sub-module 2 — Automatic Claim Initiation
+
+This is where the magic happens—claims are created for you, not by you. If you’re eligible, you’re covered. The system checks your income every day, and only counts genuine, consecutive loss days.
 
 Once a trigger fires, this sub-module runs in two phases: an immediate phase that opens claim records, and an ongoing daily phase that monitors income until the 5-day threshold is reached.
 
@@ -107,6 +125,8 @@ Once a trigger fires, this sub-module runs in two phases: an immediate phase tha
 ---
 
 ### Baseline Income Calculation
+
+We use four weeks of your earnings to figure out what’s “normal” for you. This way, one odd week doesn’t throw things off, and you get a fair shot at a payout.
 
 ```
 Baseline Daily Income = Total Earnings (last 4 weeks) ÷ Working Days
@@ -152,6 +172,8 @@ When a worker shows zero platform activity during a disaster, the system determi
 
 ## Sub-module 3 — Instant Payout Processing
 
+When it’s time to pay, we do it fast and transparently. UPI is our go-to for speed, but we have a backup if needed. You’ll always know when your money is on the way.
+
 Once a claim reaches `payout_ready`, the system calculates the payout, sends the money, notifies the worker, and closes the claim — all simultaneously.
 
 ### Payout Calculation
@@ -177,6 +199,8 @@ At the moment of payment dispatch, the worker receives:
 
 ### Audit Log
 
+Every payout is logged in detail, so there’s a clear record for you, for us, and for our partners. This keeps everyone accountable and helps us keep improving.
+
 Every payout creates a permanent record containing:
 
 | Field | Purpose |
@@ -194,6 +218,8 @@ Every payout creates a permanent record containing:
 
 ## Claim Status Flow
 
+Here’s how a claim moves through the system, from monitoring to payout, review, or rejection. It’s all about getting you help quickly—or making sure we double-check if something looks off.
+
 ```
 monitoring
     │
@@ -207,6 +233,8 @@ monitoring
 ---
 
 ## End-to-End Flow
+
+Let’s walk through a typical disaster week. Our goal is to get you to the payout as fast as possible, with no unnecessary steps in your way.
 
 **Day 0 — Disaster hits**
 - IMD issues Red or Orange alert for district
@@ -231,6 +259,8 @@ monitoring
 ---
 
 ## Implementation Checklist
+
+Here’s what it takes to keep the automation running smoothly, from setup to daily operations. We’re always working behind the scenes to make sure everything just works.
 
 ### Access and Setup
 - Email `helpdesk[at]imd.gov.in` to whitelist server IP for IMD API access
