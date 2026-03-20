@@ -1,7 +1,6 @@
 # InsureOn - Income Protection Insurance for Delivery Gig Workers
 
-
-We are designing a parametric income loss insurance platform for delivery gig workers, providing coverage against natural disasters, extreme weather, and other disruptions - with automated fraud detection and payouts. We have chosen to focus on food delivery partners like Swiggy, Zomato, etc...
+We are designing a parametric income loss insurance platform for delivery gig workers, providing coverage against natural disasters, extreme weather, and other disruptions - with automated fraud detection and payouts. We have chosen to focus on food delivery partners like Swiggy, Zomato, and such
 
 We think that India has gracefully embraced the ordering-in culture. All around the nation, people (mostly people like us) prefer ordering in than to going out to eat. Such conviniences are only possible due to the hard workers completing hundreds of gigs, so that people get their food (and the workers their money).
 
