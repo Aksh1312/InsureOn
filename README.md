@@ -1,6 +1,47 @@
 # InsureOn — Income Protection Insurance for Delivery Gig Workers
 
+
 We are designing a parametric income loss insurance platform for delivery gig workers, providing coverage against natural disasters, extreme weather, and other disruptions — with automated fraud detection and payouts.
+
+---
+
+## 🚀 Tech Stack we aim to use
+
+To build InsureOn efficiently, we recommend the following tech stack which we have some experience with:
+
+### Backend
+- **Python (FastAPI)** — High-performance APIs and business logic
+- **PyTorch** — Deep learning models for fraud detection and risk scoring
+- **LibTorch** — C++ inference for production ML workloads (optional, for high-performance/edge deployment)
+- **Ray** — Distributed computing for scalable ML training and parallelized testing
+- **PostgreSQL** — Reliable, scalable relational database
+- **Redis** — Caching, real-time triggers, background jobs
+- **Celery** — Distributed task queue for automation and scheduled jobs
+- **Pandas, scikit-learn, XGBoost** — Data processing and classical ML
+
+### Frontend
+- **React (TypeScript)** — Modern, maintainable UI
+- **Material-UI or Chakra UI** — Beautiful, accessible component library
+- **Redux Toolkit or Zustand** — State management
+
+### DevOps/Infra
+- **Docker** — Containerization for all services
+- **Kubernetes** (or Docker Compose for MVP) — Orchestration and scaling
+- **GitHub Actions** — CI/CD pipelines
+- **AWS/GCP/Azure** — Cloud hosting, managed PostgreSQL, S3 for file storage
+
+### Integrations
+- **IMD/NDMA APIs** — Weather and disaster alerts
+- **UPI/Banking APIs** — Payouts
+- **SMS/Push Notification APIs** — Alerts and communication
+
+### Security/Compliance
+- **OAuth2/JWT** — Secure authentication
+- **Vault/Secrets Manager** — Managing sensitive keys
+
+---
+
+This stack is scalable, developer-friendly, and well-suited for data-driven, event-based insurance platforms. PyTorch and Ray enable advanced ML and scalable experimentation. LibTorch is optional for C++/edge inference. Adjust as needed for your team and deployment needs.
 
 We think that India has gracefully embraced the ordering-in culture. All around the nation, people (mostly people like us) prefer ordering in than to going out to eat. Such conviniences are only possible due to the hard workers completing hundreds of gigs, so that people get their food (and the workers their money).
 
