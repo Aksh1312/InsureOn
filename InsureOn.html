@@ -1,0 +1,2389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>InsureOn - Shield for Gig Workers</title>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+/* ===================== VARIABLES ===================== */
+:root {
+  --orange:#FF5722; --orange2:#FF7043; --orange-pale:#FFF3EE; --orange-mid:#FF8A65;
+  --navy:#0D1B2A; --navy2:#1B2E45; --navy3:#243B55;
+  --blue:#1565C0; --blue2:#1976D2; --blue-light:#E3F2FD;
+  --green:#2E7D32; --green2:#43A047; --green-light:#E8F5E9;
+  --yellow:#F9A825; --yellow-light:#FFFDE7;
+  --red:#C62828; --red2:#E53935; --red-light:#FFEBEE;
+  --white:#FFFFFF; --off:#F7F9FC; --border:#E0E6EF;
+  --text:#0D1B2A; --muted:#5F6B7A; --light:#97A3B0;
+  --card:#FFFFFF;
+  --radius:16px; --radius-sm:10px;
+  --shadow:0 4px 24px rgba(13,27,42,0.10);
+  --shadow-lg:0 8px 40px rgba(13,27,42,0.16);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:'Open Sans',sans-serif;color:var(--text);background:var(--off);}
+h1,h2,h3,.display{font-family:'Open Sans',sans-serif;}
+
+/* ===================== UTILITY ===================== */
+.hidden{display:none!important;}
+.tag{display:inline-block;border-radius:20px;padding:3px 12px;font-size:0.78rem;font-weight:700;}
+.tag-green{background:var(--green-light);color:var(--green);}
+.tag-orange{background:var(--orange-pale);color:var(--orange);}
+.tag-red{background:var(--red-light);color:var(--red2);}
+.tag-blue{background:var(--blue-light);color:var(--blue);}
+.badge{display:inline-flex;align-items:center;gap:5px;border-radius:20px;padding:4px 12px;font-size:0.8rem;font-weight:700;}
+.fade-up{animation:fadeUp .5s ease both;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+
+/* ===================== SVG ICON UTILITY ===================== */
+.icon{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;}
+.icon svg{display:block;}
+
+/* ===================== PUBLIC NAV ===================== */
+#public-nav{
+  position:sticky;top:0;z-index:200;
+  background:var(--navy);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 6%;height:68px;
+  box-shadow:0 2px 20px rgba(0,0,0,0.25);
+}
+.logo{font-family:'Open Sans',sans-serif;font-size:1.6rem;font-weight:800;color:#fff;letter-spacing:-1px;}
+.logo span{color:var(--orange);}
+.pub-nav-links{display:flex;gap:32px;align-items:center;}
+.pub-nav-links a{color:rgba(255,255,255,0.75);text-decoration:none;font-weight:600;font-size:0.95rem;transition:.2s;}
+.pub-nav-links a:hover{color:#fff;}
+.nav-cta{background:var(--orange);color:#fff!important;border-radius:10px;padding:8px 20px!important;font-weight:700!important;}
+.nav-cta:hover{background:var(--orange2)!important;}
+
+/* ===================== DASHBOARD NAV ===================== */
+#dash-nav{
+  position:sticky;top:0;z-index:200;
+  background:var(--navy);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 4%;height:64px;
+  box-shadow:0 2px 20px rgba(0,0,0,0.25);
+}
+.dash-logo{font-family:'Open Sans',sans-serif;font-size:1.4rem;font-weight:800;color:#fff;letter-spacing:-0.5px;}
+.dash-logo span{color:var(--orange);}
+.dash-user{display:flex;align-items:center;gap:10px;cursor:pointer;}
+.dash-avatar{width:38px;height:38px;border-radius:50%;background:var(--orange);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:1rem;}
+.dash-name{color:#fff;font-weight:700;font-size:0.9rem;}
+.dash-logout{color:rgba(255,255,255,0.6);font-size:0.8rem;cursor:pointer;margin-left:8px;text-decoration:underline;}
+
+/* ===================== SIDEBAR ===================== */
+#sidebar{
+  position:fixed;left:0;top:64px;bottom:0;width:220px;
+  background:var(--navy2);z-index:150;
+  padding:24px 0;
+  overflow-y:auto;
+}
+.sidebar-section{padding:0 16px;margin-bottom:8px;}
+.sidebar-label{font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,0.35);padding:0 12px;margin-bottom:6px;}
+.sidebar-item{
+  display:flex;align-items:center;gap:12px;
+  padding:11px 14px;border-radius:12px;
+  color:rgba(255,255,255,0.7);font-weight:600;font-size:0.9rem;
+  cursor:pointer;transition:.18s;margin-bottom:2px;
+}
+.sidebar-item:hover{background:rgba(255,255,255,0.08);color:#fff;}
+.sidebar-item.active{background:var(--orange);color:#fff;}
+.sidebar-item .si-icon{font-size:1.1rem;width:22px;text-align:center;display:flex;align-items:center;justify-content:center;}
+
+/* ===================== MAIN CONTENT WRAPPER ===================== */
+#dash-body{margin-left:220px;min-height:calc(100vh - 64px);padding:32px 40px;background:var(--off);}
+@media(max-width:860px){
+  #sidebar{display:none;}
+  #dash-body{margin-left:0;padding:20px 16px;}
+  .pub-nav-links a:not(.nav-cta){display:none;}
+}
+
+/* ===================== PAGE PANELS ===================== */
+.dash-page{display:none;}
+.dash-page.active{display:block;animation:fadeUp .4s ease;}
+
+/* ===================== SECTION HEADER ===================== */
+.page-title{font-family:'Open Sans',sans-serif;font-size:1.7rem;font-weight:800;color:var(--navy);margin-bottom:4px;}
+.page-sub{font-size:0.92rem;color:var(--muted);margin-bottom:28px;}
+
+/* ===================== CARDS ===================== */
+.card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:24px;}
+.card-title{font-family:'Open Sans',sans-serif;font-size:0.82rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--light);margin-bottom:16px;}
+
+/* ===================== GRID ===================== */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:stretch;}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+@media(max-width:900px){.grid-4{grid-template-columns:repeat(2,1fr);}.grid-3{grid-template-columns:1fr 1fr;}.grid-2{grid-template-columns:1fr;}}
+@media(max-width:600px){.grid-3,.grid-4{grid-template-columns:1fr;}}
+
+/* ===================== STAT CARDS ===================== */
+.stat-card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px 22px;display:flex;flex-direction:column;gap:6px;}
+.stat-icon{font-size:1.8rem;margin-bottom:2px;display:flex;align-items:center;}
+.stat-val{font-family:'Open Sans',sans-serif;font-size:2rem;font-weight:800;line-height:1;}
+.stat-lbl{font-size:0.82rem;color:var(--muted);font-weight:600;}
+
+/* ===================== HERO (PUBLIC) ===================== */
+.hero{
+  background:linear-gradient(135deg,var(--navy) 0%,var(--navy3) 100%);
+  padding:90px 6% 100px;
+  position:relative;overflow:hidden;
+}
+.hero::before{
+  content:'';position:absolute;right:6%;top:50%;transform:translateY(-50%);
+  width:220px;height:220px;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z'/%3E%3C/svg%3E") center/contain no-repeat;
+  opacity:0.05;pointer-events:none;
+}
+.hero-kicker{display:inline-flex;align-items:center;gap:8px;background:rgba(255,87,34,0.15);border:1px solid rgba(255,87,34,0.4);border-radius:20px;padding:6px 16px;color:var(--orange-mid);font-weight:700;font-size:0.85rem;margin-bottom:22px;}
+.hero-kicker span{width:8px;height:8px;border-radius:50%;background:var(--orange);display:inline-block;animation:blink 1.8s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.hero h1{font-size:clamp(2.4rem,5vw,3.6rem);font-weight:800;color:#fff;line-height:1.1;margin-bottom:22px;max-width:640px;}
+.hero h1 em{color:var(--orange);font-style:normal;}
+.hero-sub{font-size:1.1rem;color:rgba(255,255,255,0.72);max-width:540px;line-height:1.7;margin-bottom:36px;}
+.hero-btns{display:flex;gap:14px;flex-wrap:wrap;}
+.btn{display:inline-block;padding:15px 32px;border-radius:12px;font-family:'Open Sans',sans-serif;font-size:1.05rem;font-weight:800;cursor:pointer;border:none;transition:.2s;text-decoration:none;}
+.btn-primary{background:var(--orange);color:#fff;}
+.btn-primary:hover{background:var(--orange2);transform:translateY(-2px);box-shadow:0 8px 24px rgba(255,87,34,0.4);}
+.btn-outline{background:transparent;color:#fff;border:2px solid rgba(255,255,255,0.4);}
+.btn-outline:hover{background:rgba(255,255,255,0.08);border-color:#fff;}
+.btn-navy{background:var(--navy);color:#fff;}
+.btn-navy:hover{background:var(--navy2);}
+.hero-trust{display:flex;align-items:center;gap:20px;margin-top:36px;flex-wrap:wrap;}
+.trust-item{display:flex;align-items:center;gap:8px;color:rgba(255,255,255,0.6);font-size:0.85rem;font-weight:600;}
+.trust-item .t-dot{width:6px;height:6px;border-radius:50%;background:var(--orange-mid);}
+
+/* ===================== SECTION (PUBLIC) ===================== */
+.pub-section{padding:80px 6%;}
+.pub-section.gray{background:#F0F4F8;}
+.section-tag{display:inline-block;background:var(--orange-pale);color:var(--orange);border-radius:20px;padding:5px 16px;font-size:0.82rem;font-weight:700;margin-bottom:14px;}
+.section-title{font-size:clamp(1.8rem,3.5vw,2.5rem);font-weight:800;color:var(--navy);margin-bottom:14px;line-height:1.15;}
+.section-sub{font-size:1rem;color:var(--muted);max-width:560px;line-height:1.7;margin-bottom:44px;}
+
+/* ===================== HOW IT WORKS ===================== */
+.steps-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;}
+@media(max-width:700px){.steps-grid{grid-template-columns:1fr;}}
+.step-card{background:#fff;border-radius:20px;padding:32px 26px;box-shadow:var(--shadow);position:relative;border-top:4px solid var(--orange);}
+.step-num{font-family:'Open Sans',sans-serif;font-size:2.8rem;font-weight:800;color:var(--orange);opacity:.18;position:absolute;top:16px;right:20px;}
+.step-icon{margin-bottom:16px;display:flex;align-items:center;}
+.step-title{font-family:'Open Sans',sans-serif;font-size:1.15rem;font-weight:800;color:var(--navy);margin-bottom:8px;}
+.step-body{font-size:0.9rem;color:var(--muted);line-height:1.6;}
+
+/* ===================== PRICING ===================== */
+.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;}
+@media(max-width:800px){.pricing-grid{grid-template-columns:1fr;}}
+.price-card{background:#fff;border-radius:20px;padding:30px 26px;box-shadow:var(--shadow);border:2px solid var(--border);transition:.25s;display:flex;flex-direction:column;}
+.price-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);}
+.price-card.featured{border-color:var(--orange);position:relative;}
+.price-card.featured::before{content:'Most Popular';position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:var(--orange);color:#fff;padding:4px 18px;border-radius:20px;font-size:0.78rem;font-weight:800;white-space:nowrap;}
+.price-zone{font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:6px;}
+.price-title{font-family:'Open Sans',sans-serif;font-size:1.3rem;font-weight:800;color:var(--navy);margin-bottom:16px;}
+.price-amount{font-family:'Open Sans',sans-serif;font-size:2.4rem;font-weight:800;color:var(--orange);line-height:1;}
+.price-amount small{font-size:1rem;color:var(--muted);font-weight:600;}
+.price-coverage{font-size:0.85rem;color:var(--muted);margin:10px 0 20px;}
+.price-features{list-style:none;flex:1;}
+.price-features li{font-size:0.88rem;color:var(--text);padding:7px 0;border-bottom:1px solid var(--border);display:flex;gap:8px;align-items:flex-start;}
+.price-features li:last-child{border-bottom:none;}
+.price-features li::before{content:'';display:inline-block;width:16px;height:16px;min-width:16px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2343A047'%3E%3Cpath d='M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z'/%3E%3C/svg%3E") center/contain no-repeat;margin-top:2px;}
+.price-cta{display:block;width:100%;padding:14px;border-radius:12px;font-family:'Open Sans',sans-serif;font-size:1rem;font-weight:800;text-align:center;cursor:pointer;border:none;margin-top:22px;transition:.2s;}
+
+/* Zone selector tabs for pricing page */
+.zone-tabs{display:flex;gap:8px;margin-bottom:32px;flex-wrap:wrap;}
+.zone-tab{padding:10px 24px;border-radius:12px;font-family:'Open Sans',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;border:2px solid var(--border);background:#fff;color:var(--muted);transition:.2s;}
+.zone-tab:hover{border-color:var(--orange);color:var(--orange);}
+.zone-tab.active{background:var(--navy);border-color:var(--navy);color:#fff;}
+.zone-pricing{display:none;}
+.zone-pricing.active{display:block;animation:fadeUp .3s ease;}
+
+/* ===================== FAQ ===================== */
+.faq-item{background:#fff;border-radius:14px;margin-bottom:12px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,0.05);}
+.faq-q{padding:18px 22px;font-weight:700;font-size:0.97rem;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:12px;}
+.faq-q::after{content:'+';font-size:1.4rem;color:var(--orange);flex-shrink:0;transition:.3s;font-weight:300;}
+.faq-item.open .faq-q::after{content:'−';}
+.faq-a{display:none;padding:0 22px 18px;font-size:0.9rem;color:var(--muted);line-height:1.7;}
+.faq-item.open .faq-a{display:block;}
+
+/* ===================== FOOTER (PUBLIC) ===================== */
+footer{background:var(--navy);color:rgba(255,255,255,0.6);padding:48px 6% 32px;font-size:0.88rem;}
+.footer-top{display:flex;justify-content:space-between;flex-wrap:wrap;gap:32px;margin-bottom:36px;}
+.footer-logo{font-family:'Open Sans',sans-serif;font-size:1.4rem;font-weight:800;color:#fff;}
+.footer-logo span{color:var(--orange);}
+.footer-desc{font-size:0.85rem;color:rgba(255,255,255,0.5);margin-top:8px;max-width:260px;line-height:1.6;}
+.footer-links h4{color:#fff;font-weight:700;margin-bottom:12px;font-size:0.9rem;}
+.footer-links a{display:block;color:rgba(255,255,255,0.55);text-decoration:none;margin-bottom:8px;transition:.2s;}
+.footer-links a:hover{color:#fff;}
+.footer-bottom{border-top:1px solid rgba(255,255,255,0.1);padding-top:20px;font-size:0.8rem;}
+
+/* ===================== LOGIN FORM ===================== */
+.auth-wrap{min-height:calc(100vh - 68px);display:flex;align-items:center;justify-content:center;padding:40px 16px;background:linear-gradient(135deg,var(--navy) 0%,var(--navy3) 100%);}
+.auth-box{background:#fff;border-radius:24px;padding:40px;width:100%;max-width:440px;box-shadow:var(--shadow-lg);}
+.auth-logo{font-family:'Open Sans',sans-serif;font-size:1.6rem;font-weight:800;color:var(--navy);margin-bottom:6px;}
+.auth-logo span{color:var(--orange);}
+.auth-sub{font-size:0.88rem;color:var(--muted);margin-bottom:28px;}
+.form-group{margin-bottom:18px;}
+.form-label{display:block;font-weight:700;font-size:0.88rem;color:var(--navy);margin-bottom:6px;}
+.form-input{width:100%;border:2px solid var(--border);border-radius:10px;padding:13px 16px;font-family:'Open Sans',sans-serif;font-size:0.97rem;outline:none;transition:.2s;}
+.form-input:focus{border-color:var(--orange);}
+.form-btn{width:100%;padding:15px;border-radius:12px;background:var(--orange);color:#fff;font-family:'Open Sans',sans-serif;font-size:1.1rem;font-weight:800;cursor:pointer;border:none;transition:.2s;margin-top:4px;}
+.form-btn:hover{background:var(--orange2);transform:translateY(-1px);}
+.auth-switch{text-align:center;margin-top:18px;font-size:0.88rem;color:var(--muted);}
+.auth-switch a{color:var(--orange);font-weight:700;cursor:pointer;text-decoration:none;}
+
+/* ===================== DASHBOARD OVERVIEW ===================== */
+.hero-banner{
+  background:linear-gradient(135deg,var(--navy) 0%,var(--navy3) 100%);
+  border-radius:20px;padding:28px 32px;color:#fff;
+  display:flex;align-items:center;justify-content:space-between;
+  gap:20px;margin-bottom:24px;position:relative;overflow:hidden;
+}
+.hero-banner::after{
+  content:'';position:absolute;right:24px;top:50%;transform:translateY(-50%);
+  width:100px;height:100px;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z'/%3E%3C/svg%3E") center/contain no-repeat;
+  opacity:0.08;pointer-events:none;
+}
+.hb-left .hb-greet{font-size:0.9rem;opacity:.75;margin-bottom:4px;}
+.hb-left .hb-name{font-family:'Open Sans',sans-serif;font-size:1.6rem;font-weight:800;margin-bottom:16px;}
+.hb-status{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,0.12);border-radius:20px;padding:8px 18px;font-weight:700;font-size:0.9rem;}
+.hb-dot{width:10px;height:10px;border-radius:50%;background:var(--green2);box-shadow:0 0 10px var(--green2);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.hb-right{display:flex;gap:16px;flex-shrink:0;}
+.hb-box{background:rgba(255,255,255,0.1);border-radius:16px;padding:16px 20px;text-align:center;backdrop-filter:blur(4px);}
+.hb-box .hb-val{font-family:'Open Sans',sans-serif;font-size:1.5rem;font-weight:800;}
+.hb-box .hb-lbl{font-size:0.75rem;opacity:.7;margin-top:2px;}
+
+/* ALERT BAR */
+.alert-bar{border-radius:14px;padding:14px 18px;display:flex;align-items:center;gap:14px;margin-bottom:16px;}
+.alert-bar.orange{background:#FFF4E0;border:2px solid #FB8C00;}
+.alert-bar.green{background:var(--green-light);border:2px solid var(--green2);}
+.alert-bar.red{background:var(--red-light);border:2px solid var(--red2);}
+.ab-icon{flex-shrink:0;display:flex;align-items:center;justify-content:center;width:40px;height:40px;}
+.ab-text .ab-title{font-weight:800;font-size:.97rem;}
+.ab-text .ab-sub{font-size:.82rem;color:var(--muted);margin-top:3px;line-height:1.5;}
+
+/* CLAIM TRACKER */
+.claim-tracker{background:linear-gradient(135deg,#FFF3EE,#FFE0D0);border:2px solid var(--orange-mid);border-radius:18px;padding:22px;margin-bottom:20px;}
+.ct-label{font-size:.8rem;font-weight:800;color:var(--orange);text-transform:uppercase;letter-spacing:.5px;}
+.ct-title{font-family:'Open Sans',sans-serif;font-size:1.2rem;font-weight:800;margin:5px 0 16px;}
+.day-dots{display:flex;gap:8px;margin-bottom:14px;}
+.day-dot{flex:1;border-radius:12px;padding:10px 6px;text-align:center;font-size:.72rem;font-weight:800;display:flex;flex-direction:column;gap:3px;align-items:center;}
+.day-dot .dd-ico{display:flex;align-items:center;justify-content:center;width:22px;height:22px;}
+.day-dot.loss{background:var(--red2);color:#fff;}
+.day-dot.ok{background:var(--green2);color:#fff;}
+.day-dot.wait{background:#E0E6EF;color:var(--muted);}
+.ct-note{font-size:.85rem;color:var(--muted);line-height:1.6;}
+.ct-note strong{color:var(--text);}
+
+/* EARNING CHART */
+.earn-row{display:flex;align-items:center;gap:10px;margin-bottom:9px;}
+.earn-day{font-size:.75rem;font-weight:700;color:var(--muted);width:28px;flex-shrink:0;}
+.earn-track{flex:1;background:#F0F4F8;border-radius:8px;height:30px;overflow:hidden;}
+.earn-bar{height:100%;border-radius:8px;display:flex;align-items:center;padding:0 10px;transition:width .6s ease;}
+.earn-bar span{font-size:.75rem;font-weight:800;color:#fff;white-space:nowrap;}
+.earn-amt{font-size:.78rem;font-weight:800;width:54px;text-align:right;flex-shrink:0;}
+
+/* INFO TABLE */
+.info-row{display:flex;justify-content:space-between;align-items:center;padding:13px 0;border-bottom:1px solid var(--border);}
+.info-row:last-child{border-bottom:none;}
+.ir-label{font-size:.87rem;color:var(--muted);font-weight:600;}
+.ir-val{font-size:.9rem;font-weight:800;}
+
+/* PAYOUT BAR */
+.payout-row{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--border);}
+.payout-row:last-child{border-bottom:none;}
+.p-days{font-size:.82rem;color:var(--muted);font-weight:700;width:70px;flex-shrink:0;}
+.p-track{flex:1;background:#F0F4F8;border-radius:8px;height:28px;overflow:hidden;}
+.p-fill{height:100%;border-radius:8px;display:flex;align-items:center;padding:0 10px;}
+.p-fill span{font-size:.76rem;font-weight:800;color:#fff;white-space:nowrap;}
+
+/* TIP CARD */
+.tip-card{background:#fff;border-radius:14px;padding:16px 18px;margin-bottom:0;display:flex;align-items:center;gap:14px;box-shadow:0 2px 8px rgba(0,0,0,.06);}
+.tc-icon{display:flex;align-items:center;justify-content:center;width:36px;height:36px;flex-shrink:0;margin-top:2px;border-radius:8px;}
+.tc-title{font-weight:800;font-size:.95rem;margin-bottom:3px;}
+.tc-body{font-size:.83rem;color:var(--muted);line-height:1.5;}
+.tip-card.orange{border-left:4px solid var(--orange);}
+.tip-card.green{border-left:4px solid var(--green2);}
+.tip-card.red{border-left:4px solid var(--red2);}
+.tip-card.yellow{border-left:4px solid var(--yellow);}
+.tip-card.blue{border-left:4px solid var(--blue2);}
+
+/* SURGE MAP */
+.surge-map{background:linear-gradient(135deg,var(--navy) 0%,var(--navy3) 100%);border-radius:18px;padding:22px;color:#fff;margin-bottom:20px;}
+.surge-grid{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
+.surge-pill{display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.12);border-radius:10px;padding:7px 14px;font-size:.82rem;font-weight:700;}
+.surge-dot{width:9px;height:9px;border-radius:50%;}
+
+/* PAST CLAIM ROW */
+.past-claim{background:#fff;border-radius:14px;padding:16px 18px;margin-bottom:10px;display:flex;align-items:center;gap:16px;box-shadow:0 2px 8px rgba(0,0,0,.06);}
+.pc-ico{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:12px;background:var(--blue-light);flex-shrink:0;}
+.pc-title{font-weight:800;font-size:.93rem;}
+.pc-sub{font-size:.78rem;color:var(--muted);margin-top:2px;}
+.pc-right{margin-left:auto;text-align:right;flex-shrink:0;}
+.pc-amt{font-family:'Open Sans',sans-serif;font-size:1.15rem;font-weight:800;color:var(--green);}
+.pc-tag{font-size:.72rem;font-weight:700;color:var(--green);background:var(--green-light);border-radius:8px;padding:2px 8px;margin-top:3px;display:inline-block;}
+
+/* HOW CLAIM WORKS */
+.how-step{display:flex;gap:16px;align-items:flex-start;margin-bottom:20px;}
+.hs-num{width:44px;height:44px;border-radius:14px;background:var(--orange);color:#fff;font-family:'Open Sans',sans-serif;font-size:1.3rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.hs-title{font-weight:800;font-size:.97rem;margin-bottom:4px;}
+.hs-body{font-size:.84rem;color:var(--muted);line-height:1.55;}
+
+/* POLICY HERO */
+.policy-hero{background:linear-gradient(135deg,var(--green) 0%,var(--green2) 100%);border-radius:20px;padding:28px;color:#fff;text-align:center;margin-bottom:24px;position:relative;overflow:hidden;}
+.ph-label{font-size:.85rem;opacity:.85;margin-bottom:4px;}
+.ph-amount{font-family:'Open Sans',sans-serif;font-size:3.2rem;font-weight:800;margin:8px 0 4px;}
+.ph-sub{font-size:.88rem;opacity:.8;}
+
+/* PROFILE */
+.profile-avatar{width:72px;height:72px;border-radius:50%;background:var(--orange);display:flex;align-items:center;justify-content:center;font-family:'Open Sans',sans-serif;font-size:2rem;font-weight:800;color:#fff;margin-bottom:14px;}
+.premium-bar{background:linear-gradient(90deg,var(--orange-pale),#FFE0CC);border:2px solid var(--orange-mid);border-radius:16px;padding:18px 22px;display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:12px;}
+.pb-left .pb-label{font-size:.8rem;color:var(--orange);font-weight:700;text-transform:uppercase;}
+.pb-left .pb-amt{font-family:'Open Sans',sans-serif;font-size:1.8rem;font-weight:800;}
+.pb-left .pb-sub{font-size:.78rem;color:var(--muted);margin-top:2px;}
+.pb-btn{background:var(--orange);color:#fff;border:none;border-radius:12px;padding:13px 24px;font-family:'Open Sans',sans-serif;font-size:1rem;font-weight:800;cursor:pointer;transition:.2s;white-space:nowrap;}
+.pb-btn:hover{background:var(--orange2);}
+
+/* CONTACT */
+.contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px;}
+@media(max-width:640px){.contact-grid{grid-template-columns:1fr;}}
+.contact-card{background:#fff;border-radius:18px;padding:28px 22px;text-align:center;box-shadow:var(--shadow);}
+.cc-icon{display:flex;align-items:center;justify-content:center;width:52px;height:52px;border-radius:14px;background:var(--orange-pale);margin:0 auto 12px;}
+.cc-title{font-family:'Open Sans',sans-serif;font-size:1.1rem;font-weight:800;margin-bottom:6px;}
+.cc-sub{font-size:.85rem;color:var(--muted);margin-bottom:16px;line-height:1.5;}
+.cc-action{display:inline-block;padding:11px 24px;border-radius:10px;font-family:'Open Sans',sans-serif;font-weight:800;font-size:.95rem;cursor:pointer;border:2px solid var(--navy);color:var(--navy);text-decoration:none;transition:.2s;}
+.cc-action:hover{background:var(--navy);color:#fff;}
+.cc-action.filled{background:var(--orange);border-color:var(--orange);color:#fff;}
+.cc-action.filled:hover{background:var(--orange2);border-color:var(--orange2);}
+
+/* NOTIFICATION LIST */
+.notif-item{display:flex;gap:14px;align-items:flex-start;padding:16px;background:#fff;border-radius:14px;margin-bottom:10px;box-shadow:0 2px 8px rgba(0,0,0,.05);}
+.notif-dot{width:10px;height:10px;border-radius:50%;background:var(--orange);flex-shrink:0;margin-top:4px;}
+.notif-dot.read{background:var(--border);}
+.notif-title{font-weight:700;font-size:.92rem;margin-bottom:3px;}
+.notif-body{font-size:.82rem;color:var(--muted);line-height:1.5;}
+.notif-time{font-size:.74rem;color:var(--light);margin-top:4px;}
+
+/* SMARTWORK PUBLIC CARD */
+.sw-feature-card{background:#fff;border-radius:20px;padding:28px 24px;box-shadow:var(--shadow);border-left:5px solid var(--orange);display:flex;flex-direction:column;justify-content:center;}
+.sw-feature-card .sw-title{font-family:'Open Sans',sans-serif;font-size:1.05rem;font-weight:800;color:var(--navy);margin-bottom:6px;}
+.sw-feature-card .sw-body{font-size:.88rem;color:var(--muted);line-height:1.6;}
+.sw-badge{display:inline-flex;align-items:center;gap:6px;background:var(--orange-pale);border-radius:8px;padding:4px 12px;font-size:.78rem;font-weight:700;color:var(--orange);margin-bottom:12px;}
+
+/* ─── PUBLIC SECTIONS ─── */
+#pub-home,#pub-how,#pub-pricing,#pub-smartwork,#pub-login,#pub-signup{display:none;}
+#pub-home.active,#pub-how.active,#pub-pricing.active,#pub-smartwork.active,#pub-login.active,#pub-signup.active{display:block;}
+
+/* Icon color helpers */
+.icon-orange svg{fill:var(--orange);}
+.icon-green svg{fill:var(--green2);}
+.icon-blue svg{fill:var(--blue2);}
+.icon-red svg{fill:var(--red2);}
+.icon-white svg{fill:#fff;}
+.icon-muted svg{fill:var(--muted);}
+.icon-navy svg{fill:var(--navy);}
+.icon-yellow svg{fill:var(--yellow);}
+
+/* ===================== HOW CLAIMS WORKS DROPDOWN ===================== */
+.claims-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;}
+.how-claims-dropdown{position:relative;}
+.how-claims-btn{display:flex;align-items:center;gap:8px;background:var(--navy);color:#fff;border:none;border-radius:12px;padding:11px 18px;font-family:'Open Sans',sans-serif;font-size:.88rem;font-weight:700;cursor:pointer;transition:.2s;white-space:nowrap;}
+.how-claims-btn:hover{background:var(--navy2);}
+.how-claims-btn svg{transition:.3s;}
+.how-claims-btn.open svg{transform:rotate(180deg);}
+.how-claims-panel{
+  position:absolute;right:0;top:calc(100% + 10px);
+  width:380px;background:#fff;border-radius:20px;
+  box-shadow:0 12px 48px rgba(13,27,42,0.18);
+  border:1px solid var(--border);
+  z-index:100;
+  display:none;
+  overflow:hidden;
+  animation:fadeUp .25s ease;
+}
+.how-claims-panel.open{display:block;}
+.hcp-header{background:linear-gradient(135deg,var(--navy),var(--navy3));padding:18px 22px;}
+.hcp-header-title{color:#fff;font-weight:800;font-size:1rem;margin-bottom:2px;}
+.hcp-header-sub{color:rgba(255,255,255,.6);font-size:.78rem;}
+.hcp-body{padding:20px 22px;}
+.hcp-step{display:flex;gap:14px;align-items:flex-start;margin-bottom:14px;}
+.hcp-step:last-child{margin-bottom:0;}
+.hcp-num{width:38px;height:38px;border-radius:12px;background:var(--orange);color:#fff;font-family:'Open Sans',sans-serif;font-size:1.1rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.hcp-content .hcp-title{font-weight:800;font-size:.92rem;margin-bottom:3px;color:var(--navy);}
+.hcp-content .hcp-body{font-size:.8rem;color:var(--muted);line-height:1.5;}
+
+/* ===================== SMARTWORK PUBLIC PAGE ===================== */
+.sw-hero{
+  background:linear-gradient(135deg,#0D1B2A 0%,#1a3a2a 50%,#0D2818 100%);
+  padding:80px 6% 90px;position:relative;overflow:hidden;
+}
+.sw-hero::before{
+  content:'';position:absolute;right:0;top:0;bottom:0;width:40%;
+  background:radial-gradient(ellipse at center,rgba(67,160,71,0.15) 0%,transparent 70%);
+  pointer-events:none;
+}
+.sw-hero-kicker{display:inline-flex;align-items:center;gap:8px;background:rgba(67,160,71,0.2);border:1px solid rgba(67,160,71,0.4);border-radius:20px;padding:6px 16px;color:#81C784;font-weight:700;font-size:0.85rem;margin-bottom:22px;}
+.sw-hero-kicker span{width:8px;height:8px;border-radius:50%;background:#43A047;display:inline-block;animation:blink 1.8s infinite;}
+.sw-stat-strip{display:flex;gap:16px;flex-wrap:wrap;margin-top:32px;}
+.sw-stat-pill{background:rgba(255,255,255,.1);border-radius:14px;padding:14px 20px;display:flex;align-items:center;gap:10px;}
+.sw-stat-pill .ssp-val{font-family:'Open Sans',sans-serif;font-size:1.4rem;font-weight:800;color:#fff;}
+.sw-stat-pill .ssp-lbl{font-size:.75rem;color:rgba(255,255,255,.6);font-weight:600;}
+
+/* Segment tabs */
+.sw-tabs{display:flex;gap:8px;background:#fff;border-radius:14px;padding:6px;margin-bottom:28px;box-shadow:var(--shadow);}
+.sw-tab{flex:1;padding:12px;border-radius:10px;font-family:'Open Sans',sans-serif;font-weight:700;font-size:.88rem;cursor:pointer;border:none;background:transparent;color:var(--muted);transition:.2s;text-align:center;}
+.sw-tab.active{background:var(--orange);color:#fff;}
+.sw-tab-content{display:none;}
+.sw-tab-content.active{display:block;animation:fadeUp .3s ease;}
+
+/* Channel delivery pill */
+.channel-pill{display:inline-flex;align-items:center;gap:7px;background:var(--navy);color:#fff;border-radius:10px;padding:8px 14px;font-size:.78rem;font-weight:700;margin-right:8px;margin-bottom:8px;}
+
+/* Impact grid */
+.impact-card{background:#fff;border-radius:18px;padding:24px;box-shadow:var(--shadow);text-align:center;border-top:4px solid var(--orange);}
+.impact-val{font-family:'Open Sans',sans-serif;font-size:2.2rem;font-weight:800;color:var(--orange);margin-bottom:6px;}
+.impact-lbl{font-size:.85rem;color:var(--muted);font-weight:600;line-height:1.4;}
+
+/* Discount badge row */
+.discount-row{display:flex;align-items:center;justify-content:space-between;padding:13px 0;border-bottom:1px solid var(--border);}
+.discount-row:last-child{border-bottom:none;}
+.dr-behavior{font-size:.88rem;color:var(--text);font-weight:600;display:flex;align-items:center;gap:8px;}
+.dr-discount{font-size:.9rem;font-weight:800;color:var(--green);}
+
+/* Week sample card */
+.week-sample{background:#fff;border-radius:20px;overflow:hidden;box-shadow:var(--shadow);display:flex;flex-direction:column;}
+.ws-header{background:var(--navy);padding:16px 22px;display:flex;align-items:center;justify-content:space-between;}
+.ws-header-left span{color:#fff;font-weight:800;font-size:.95rem;display:block;}
+.ws-header-left small{color:rgba(255,255,255,.5);font-size:.72rem;}
+.ws-persona-tag{display:inline-flex;align-items:center;gap:6px;background:rgba(255,87,34,.25);border-radius:8px;padding:4px 10px;font-size:.72rem;font-weight:700;color:var(--orange-mid);}
+.ws-body{padding:18px 22px;display:flex;flex-direction:column;gap:10px;flex:1;}
+.ws-tip{display:flex;align-items:flex-start;gap:10px;padding:11px 14px;border-radius:12px;flex:1;}
+.ws-tip-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.ws-tip-title{font-weight:800;font-size:.85rem;margin-bottom:2px;}
+.ws-tip-body{font-size:.75rem;color:var(--muted);line-height:1.4;}
+
+/* Data source tag */
+.data-source-tag{display:inline-flex;align-items:center;gap:6px;background:var(--blue-light);border-radius:8px;padding:5px 12px;font-size:.76rem;font-weight:700;color:var(--blue2);margin-right:6px;margin-bottom:6px;}
+
+/* ===================== EQUAL HEIGHT COLUMN HELPERS ===================== */
+.col-stretch{display:flex;flex-direction:column;height:100%;}
+.col-stretch-gap{display:flex;flex-direction:column;gap:16px;height:100%;}
+.flex-fill{flex:1;min-height:0;}
+.flex-fill-2{flex:2;min-height:0;}
+
+/* ===================== ZONE BADGE STYLES ===================== */
+.zone-badge-A{display:inline-flex;align-items:center;gap:6px;background:var(--red-light);border:1px solid #FFCDD2;color:var(--red2);border-radius:20px;padding:4px 14px;font-size:.78rem;font-weight:700;}
+.zone-badge-B{display:inline-flex;align-items:center;gap:6px;background:var(--yellow-light);border:1px solid #FFF9C4;color:#E65100;border-radius:20px;padding:4px 14px;font-size:.78rem;font-weight:700;}
+.zone-badge-C{display:inline-flex;align-items:center;gap:6px;background:var(--green-light);border:1px solid #C8E6C9;color:var(--green);border-radius:20px;padding:4px 14px;font-size:.78rem;font-weight:700;}
+.zone-dot{width:7px;height:7px;border-radius:50%;display:inline-block;}
+
+/* Pricing hour band rows */
+.band-table{width:100%;border-collapse:collapse;margin-top:12px;}
+.band-table th{font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;padding:8px 10px;background:#F7F9FC;border-radius:8px;}
+.band-table td{font-size:.82rem;padding:10px 10px;border-bottom:1px solid var(--border);color:var(--text);}
+.band-table tr:last-child td{border-bottom:none;}
+.band-table td.band-price{font-weight:800;color:var(--orange);}
+.band-table td.band-cover{font-weight:700;color:var(--navy);}
+
+/* Sign up zone step */
+.zone-step{display:flex;flex-direction:column;gap:12px;}
+.zone-choice{cursor:pointer;border:2px solid var(--border);border-radius:14px;padding:16px 18px;background:#fff;transition:.2s;display:flex;align-items:center;gap:14px;}
+.zone-choice:hover{border-color:var(--orange);background:var(--orange-pale);}
+.zone-choice.selected{border-color:var(--orange);background:var(--orange-pale);box-shadow:0 0 0 3px rgba(255,87,34,.12);}
+.zone-choice-icon{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.2rem;}
+.zone-choice-name{font-weight:800;font-size:.97rem;color:var(--navy);}
+.zone-choice-cities{font-size:.78rem;color:var(--muted);margin-top:2px;}
+.zone-choice-risk{margin-left:auto;flex-shrink:0;}
+
+/* Signup step visibility */
+.signup-step{display:none;}
+.signup-step.active{display:block;animation:fadeUp .3s ease;}
+.step-indicator{display:flex;gap:8px;margin-bottom:20px;align-items:center;}
+.step-dot{width:8px;height:8px;border-radius:50%;background:var(--border);transition:.3s;}
+.step-dot.active{background:var(--orange);width:24px;border-radius:4px;}
+.step-dot.done{background:var(--green2);}
+.step-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.step-header-title {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--navy);
+}
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--off);
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  padding: 8px 16px;
+  font-family: 'Open Sans', sans-serif;
+  font-size: .85rem;
+  font-weight: 700;
+  color: var(--navy);
+  cursor: pointer;
+  transition: .2s;
+  white-space: nowrap;
+}
+.back-btn:hover {
+  background: var(--navy);
+  border-color: var(--navy);
+  color: #fff;
+}
+</style>
+</head>
+<body>
+
+<!-- SVG ICON DEFS -->
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none;">
+  <defs>
+    <symbol id="ico-shield" viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></symbol>
+    <symbol id="ico-rain" viewBox="0 0 24 24"><path d="M6 19a5 5 0 010-10 5.001 5.001 0 019.9-1A3 3 0 0119 14H6zm5 1l-1 3m3-3l-1 3m-4-1l-1 3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="ico-trending" viewBox="0 0 24 24"><path d="M3 17l5-5 4 4 7-8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="ico-money" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M6 10v4M18 10v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="ico-check" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="ico-warning" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" fill="none" stroke="currentColor" stroke-width="1.8"/><line x1="12" y1="9" x2="12" y2="13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="17" r="0.5" stroke="currentColor" stroke-width="1.8"/></symbol>
+    <symbol id="ico-x" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></symbol>
+    <symbol id="ico-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 7v5l3 3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="ico-calendar" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="ico-chart" viewBox="0 0 24 24"><rect x="3" y="14" width="4" height="7" rx="1" fill="currentColor"/><rect x="10" y="9" width="4" height="12" rx="1" fill="currentColor"/><rect x="17" y="4" width="4" height="17" rx="1" fill="currentColor"/></symbol>
+    <symbol id="ico-trophy" viewBox="0 0 24 24"><path d="M6 9H4a2 2 0 01-2-2V5h4m14 4h2a2 2 0 002-2V5h-4M6 9c0 4 2 7 6 8 4-1 6-4 6-8M9 21h6m-3-4v4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="ico-bell" viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="ico-user" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2M12 11a4 4 0 100-8 4 4 0 000 8z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="ico-home" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" fill="none" stroke="currentColor" stroke-width="1.8"/><polyline points="9,22 9,12 15,12 15,22" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
+    <symbol id="ico-clipboard" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="ico-bulb" viewBox="0 0 24 24"><path d="M9 18h6m-5 4h4M12 2a7 7 0 015.29 11.62C16.45 14.75 16 15.85 16 17H8c0-1.15-.45-2.25-1.29-3.38A7 7 0 0112 2z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="ico-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
+    <symbol id="ico-chat" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="ico-logout" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4m7 14l5-5-5-5m5 5H9" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="ico-phone" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.67A2 2 0 012 1h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 8.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="ico-message" viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="ico-video" viewBox="0 0 24 24"><polygon points="23,7 16,12 23,17 23,7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><rect x="1" y="5" width="15" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
+    <symbol id="ico-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3m.08 4h.01" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="ico-flood" viewBox="0 0 24 24"><path d="M2 12c1.5-2 3-2 4.5 0s3 2 4.5 0 3-2 4.5 0 3 2 4.5 0M2 17c1.5-2 3-2 4.5 0s3 2 4.5 0 3-2 4.5 0 3 2 4.5 0M12 2v7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="ico-cyclone" viewBox="0 0 24 24"><path d="M9.59 4.59A2 2 0 1111 8H2m10.59 11.41A2 2 0 1113 16H2m15.73-8.27A2 2 0 1119 12H2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="ico-frown" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M16 16s-1.5-2-4-2-4 2-4 2M9 9h.01M15 9h.01" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="ico-lock" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M7 11V7a5 5 0 0110 0v4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="ico-moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="ico-danger" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M4.93 4.93l14.14 14.14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="ico-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.8"/><line x1="12" y1="8" x2="12" y2="8" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><line x1="12" y1="12" x2="12" y2="16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="ico-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="ico-star" viewBox="0 0 24 24"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" fill="currentColor"/></symbol>
+    <symbol id="ico-pin" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="10" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
+    <symbol id="ico-food" viewBox="0 0 24 24"><path d="M6 2v6m0 0c0 3.31 2.69 6 6 6s6-2.69 6-6M6 8h12M12 14v8m-4 0h8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="ico-sleep" viewBox="0 0 24 24"><path d="M3 12h5l-3 4h5m5-11h5l-3 4h5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="ico-map" viewBox="0 0 24 24"><polygon points="1,6 1,22 8,18 16,22 23,18 23,2 16,6 8,2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><line x1="8" y1="2" x2="8" y2="18" stroke="currentColor" stroke-width="1.8"/><line x1="16" y1="6" x2="16" y2="22" stroke="currentColor" stroke-width="1.8"/></symbol>
+    <symbol id="ico-autopay" viewBox="0 0 24 24"><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="ico-sms" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2c-3.66-.38-7.16-1.64-10.19-3.68A19.8 19.8 0 013.07 9.81a19.79 19.79 0 01-3.07-8.67A2 2 0 012 1h3.12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M15 3h6v6m-6 0l6-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="ico-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.8"/><line x1="2" y1="12" x2="22" y2="12" stroke="currentColor" stroke-width="1.8"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
+    <symbol id="ico-discount" viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z" fill="none" stroke="currentColor" stroke-width="1.8"/><line x1="7" y1="7" x2="7.01" y2="7" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></symbol>
+    <symbol id="ico-zap" viewBox="0 0 24 24"><polygon points="13,2 3,14 12,14 11,22 21,10 12,10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="ico-doc" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" fill="none" stroke="currentColor" stroke-width="1.8"/><polyline points="14,2 14,8 20,8" fill="none" stroke="currentColor" stroke-width="1.8"/><line x1="16" y1="13" x2="8" y2="13" stroke="currentColor" stroke-width="1.8"/><line x1="16" y1="17" x2="8" y2="17" stroke="currentColor" stroke-width="1.8"/></symbol>
+    <symbol id="ico-lightning" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></symbol>
+    <symbol id="ico-upi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 10v4M18 10v4"/></symbol>
+    <symbol id="ico-chevron-down" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  </defs>
+</svg>
+
+<!-- ══════════════════════════════════════════════════════════
+     PUBLIC SITE
+═══════════════════════════════════════════════════════════ -->
+<div id="public-site">
+
+  <!-- PUBLIC NAV -->
+  <nav id="public-nav">
+    <div class="logo">Insure<span>On</span></div>
+    <div class="pub-nav-links">
+      <a href="#" onclick="showPub('pub-home')">Home</a>
+      <a href="#" onclick="showPub('pub-how')">How It Works</a>
+      <a href="#" onclick="showPub('pub-pricing')">Pricing</a>
+      <a href="#" onclick="showPub('pub-smartwork')">SmartWork</a>
+      <a href="#" onclick="showPub('pub-login')">Login</a>
+      <a href="#" class="nav-cta" onclick="showPub('pub-signup')">Sign Up Free</a>
+    </div>
+  </nav>
+
+  <!-- ── HOME ── -->
+  <div id="pub-home" class="active">
+    <section class="hero">
+      <h1>When bad days stop your work,<br/><em>we pay your salary.</em></h1>
+      <p class="hero-sub">InsureOn watches what is happening in your city - bad weather, shutdowns, disasters - and sends money straight to your UPI. No forms. No phone calls. No waiting in lines.</p>
+      <p style="font-size:.8rem;color:rgba(255,255,255,.7);margin-top:10px;margin-bottom:15px;">
+Premium varies based on your city risk, working hours, and safety score.
+</p>
+      <div class="hero-btns">
+        <button class="btn btn-primary" onclick="showPub('pub-signup')">Start from ₹15/week &rarr;</button>
+        <button class="btn btn-outline" onclick="showPub('pub-how')">See how it works</button>
+      </div>
+      <div class="hero-trust">
+        <div class="trust-item"><svg width="15" height="15" style="color:#FF8A65"><use href="#ico-lightning"/></svg> Payout in 48–72 hours</div>
+        <div class="trust-item"><svg width="15" height="15" style="color:#FF8A65"><use href="#ico-upi"/></svg> UPI transfer - no bank visit</div>
+        <div class="trust-item"><svg width="15" height="15" style="color:#FF8A65"><use href="#ico-check"/></svg> Works as delivery partners</div>
+      </div>
+    </section>
+
+    <section class="pub-section">
+      <div class="section-tag">The Problem</div>
+      <h2 class="section-title">One bad week can wipe out your whole month</h2>
+      <p class="section-sub">You work hard every day. But when something big hits your city - orders stop, roads close, and you earn nothing. Your bills don't stop. There is no backup. Until now.</p>
+      <div class="grid-3">
+        <div class="card" style="text-align:center;padding:32px 22px;">
+          <div style="display:flex;justify-content:center;margin-bottom:14px;"><div style="width:56px;height:56px;border-radius:16px;background:var(--blue-light);display:flex;align-items:center;justify-content:center;"><svg width="28" height="28" style="color:var(--blue2);fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;"><use href="#ico-flood"/></svg></div></div>
+          <div style="font-family:'Open Sans',sans-serif;font-size:1.05rem;font-weight:800;margin-bottom:8px;">Bad days shut everything down</div>
+          <div style="font-size:.88rem;color:var(--muted);line-height:1.6;">Heavy rains, storms, shutdowns, or curfews - the city stops and so do all your orders.</div>
+        </div>
+        <div class="card" style="text-align:center;padding:32px 22px;">
+          <div style="display:flex;justify-content:center;margin-bottom:14px;"><div style="width:56px;height:56px;border-radius:16px;background:var(--red-light);display:flex;align-items:center;justify-content:center;"><svg width="28" height="28" style="color:var(--red2);fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;"><use href="#ico-frown"/></svg></div></div>
+          <div style="font-family:'Open Sans',sans-serif;font-size:1.05rem;font-weight:800;margin-bottom:8px;">Your bills still come</div>
+          <div style="font-size:.88rem;color:var(--muted);line-height:1.6;">Rent. Food. EMI. They don't pause even when your work does.</div>
+        </div>
+        <div class="card" style="text-align:center;padding:32px 22px;">
+          <div style="display:flex;justify-content:center;margin-bottom:14px;"><div style="width:56px;height:56px;border-radius:16px;background:var(--orange-pale);display:flex;align-items:center;justify-content:center;"><svg width="28" height="28" style="color:var(--orange);fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;"><use href="#ico-lock"/></svg></div></div>
+          <div style="font-family:'Open Sans',sans-serif;font-size:1.05rem;font-weight:800;margin-bottom:8px;">No one helps you</div>
+          <div style="font-size:.88rem;color:var(--muted);line-height:1.6;">Delivery platforms don't give you money for days you cannot work. You are on your own.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="pub-section gray">
+      <div class="section-tag">What We Cover</div>
+      <h2 class="section-title">We protect you from all kinds of bad situations</h2>
+      <p class="section-sub">Not just rain - anything that stops you from going out and earning. If your city shuts down and your money drops, we step in.</p>
+      <div class="grid-3">
+        <div class="card" style="padding:26px 22px;">
+          <div style="width:48px;height:48px;border-radius:14px;background:var(--blue-light);display:flex;align-items:center;justify-content:center;margin-bottom:14px;"><svg width="24" height="24" style="color:var(--blue2);fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;"><use href="#ico-flood"/></svg></div>
+          <div style="font-weight:800;font-size:1rem;margin-bottom:6px;">Heavy Rain &amp; Floods</div>
+          <div style="font-size:.86rem;color:var(--muted);line-height:1.6;">Streets fill with water, roads close, no orders come in.</div>
+        </div>
+        <div class="card" style="padding:26px 22px;">
+          <div style="width:48px;height:48px;border-radius:14px;background:var(--red-light);display:flex;align-items:center;justify-content:center;margin-bottom:14px;"><svg width="24" height="24" style="color:var(--red2);fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;"><use href="#ico-cyclone"/></svg></div>
+          <div style="font-weight:800;font-size:1rem;margin-bottom:6px;">Storms &amp; Cyclones</div>
+          <div style="font-size:.86rem;color:var(--muted);line-height:1.6;">Big storms that make it unsafe to go outside at all.</div>
+        </div>
+        <div class="card" style="padding:26px 22px;">
+          <div style="width:48px;height:48px;border-radius:14px;background:var(--orange-pale);display:flex;align-items:center;justify-content:center;margin-bottom:14px;"><svg width="24" height="24" style="color:var(--orange);fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;"><use href="#ico-danger"/></svg></div>
+          <div style="font-weight:800;font-size:1rem;margin-bottom:6px;">Lockdowns &amp; Curfews</div>
+          <div style="font-size:.86rem;color:var(--muted);line-height:1.6;">Government shutdowns, riots, or zone curfews that stop all movement.</div>
+        </div>
+        <div class="card" style="padding:26px 22px;">
+          <div style="width:48px;height:48px;border-radius:14px;background:var(--yellow-light);display:flex;align-items:center;justify-content:center;margin-bottom:14px;"><svg width="24" height="24" style="color:var(--yellow);fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;"><use href="#ico-warning"/></svg></div>
+          <div style="font-weight:800;font-size:1rem;margin-bottom:6px;">Earthquakes &amp; Disasters</div>
+          <div style="font-size:.86rem;color:var(--muted);line-height:1.6;">Natural events declared as disasters by the government.</div>
+        </div>
+        <div class="card" style="padding:26px 22px;">
+          <div style="width:48px;height:48px;border-radius:14px;background:var(--green-light);display:flex;align-items:center;justify-content:center;margin-bottom:14px;"><svg width="24" height="24" style="color:var(--green2);fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;"><use href="#ico-zap"/></svg></div>
+          <div style="font-weight:800;font-size:1rem;margin-bottom:6px;">App Shutdowns (Add-on)</div>
+          <div style="font-size:.86rem;color:var(--muted);line-height:1.6;">If the delivery app itself stops working for a long time.</div>
+        </div>
+        <div class="card" style="padding:26px 22px;">
+          <div style="width:48px;height:48px;border-radius:14px;background:#FFF0F0;display:flex;align-items:center;justify-content:center;margin-bottom:14px;"><svg width="24" height="24" viewBox="0 0 24 24" style="color:#E53935;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;"><path d="M12 2a5 5 0 015 5c0 3-2 5-2 8H9c0-3-2-5-2-8a5 5 0 015-5z"/><path d="M9 18h6m-5 3h4"/></svg></div>
+          <div style="font-weight:800;font-size:1rem;margin-bottom:6px;">Extreme Heat &amp; Heatwaves</div>
+          <div style="font-size:.86rem;color:var(--muted);line-height:1.6;">Government-declared heatwave alerts that make outdoor work dangerous or impossible.</div>
+        </div>
+      </div>
+      <!-- SOLUTION -->
+    <section class="pub-section">
+      <div class="section-tag">How It Works</div>
+      <h2 class="section-title">InsureOn watches over you - on its own</h2>
+      <p class="section-sub">We track what is happening in your city every day. If something big hits and your money drops for 5 days in a row - we send money to your UPI. That simple.</p>
+      <div class="grid-2">
+        <div style="display:flex;flex-direction:column;gap:16px;">
+          <div class="tip-card green" style="flex:1;">
+            <div class="tc-icon" style="background:var(--green-light);">
+              <svg width="20" height="20" style="color:var(--green2);fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;"><use href="#ico-rain"/></svg>
+            </div>
+            <div><div class="tc-title">We watch what is happening in your city</div><div class="tc-body">Our system checks government alerts every 15 minutes. If a big problem is reported in your city - we act right away.</div></div>
+          </div>
+          <div class="tip-card orange" style="flex:1;">
+            <div class="tc-icon" style="background:var(--orange-pale);">
+              <svg width="20" height="20" style="color:var(--orange);fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;"><use href="#ico-chart"/></svg>
+            </div>
+            <div><div class="tc-title">We check your money automatically</div><div class="tc-body">We connect with your delivery company accounts to see if your earnings have gone down. You do not need to tell us anything.</div></div>
+          </div>
+          <div class="tip-card green" style="flex:1;">
+            <div class="tc-icon" style="background:var(--green-light);">
+              <svg width="20" height="20" style="color:var(--green2);fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;"><use href="#ico-money"/></svg>
+            </div>
+            <div><div class="tc-title">Money in your UPI in 48–72 hours</div><div class="tc-body">If your money stays low for 5 days - we send your payout straight to your UPI ID. No form. No office. No waiting.</div></div>
+          </div>
+        </div>
+        <div class="card" style="display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:40px 28px;background:linear-gradient(135deg,var(--navy),var(--navy3));">
+          <div style="width:72px;height:72px;border-radius:20px;background:rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;margin-bottom:16px;">
+            <svg width="38" height="38" style="color:#fff;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;"><use href="#ico-shield"/></svg>
+          </div>
+          <div style="font-family:'Open Sans',sans-serif;font-size:1.8rem;font-weight:800;color:#fff;margin-bottom:10px;">You never fill a form</div>
+          <div style="font-size:.95rem;color:rgba(255,255,255,.65);line-height:1.7;">No paperwork.<br/>No helpline calls.<br/>No waiting weeks to get approved.<br/><br/>The system does everything by itself.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SMARTWORK PREVIEW -->
+    <section class="pub-section gray">
+      <div class="section-tag">SmartWork</div>
+      <h2 class="section-title">We also help you earn more with <em style="color:var(--orange);font-style:normal;">SmartWork</em></h2>
+      <p class="section-sub">InsureOn is not just about bad days. Every Monday, we send you simple tips - best times to work, best places to go, when to rest. Follow them and earn 10–15% more each week.</p>
+
+      <div class="grid-2" style="margin-bottom:28px;align-items:stretch;">
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <div class="sw-feature-card" style="flex:1;">
+            <div class="sw-badge"><svg width="14" height="14" style="color:var(--orange);fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;"><use href="#ico-clock"/></svg> Best Times</div>
+            <div class="sw-title">We tell you the best hours to work</div>
+            <div class="sw-body">We look at past orders in your city and tell you exactly when the most orders come in. Work smarter, not more hours.</div>
+          </div>
+          <div class="sw-feature-card" style="flex:1;">
+            <div class="sw-badge"><svg width="14" height="14" style="color:var(--orange);fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;"><use href="#ico-pin"/></svg> Best Zones</div>
+            <div class="sw-title">We show you where orders are busiest</div>
+            <div class="sw-body">We highlight the Zones of your city where orders are coming in fast right now - so you can go there and earn more per hour.</div>
+          </div>
+          <div class="sw-feature-card" style="flex:1;">
+            <div class="sw-badge"><svg width="14" height="14" style="color:var(--orange);fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;"><use href="#ico-warning"/></svg> Safety Alerts</div>
+            <div class="sw-title">We warn you when to stay home</div>
+            <div class="sw-body">On dangerous days, we tell you to rest. Your insurance is still watching - you do not need to risk your safety to earn.</div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <div class="card" style="padding:0;overflow:hidden;flex:1;display:flex;flex-direction:column;">
+            <div style="background:var(--navy);padding:16px 20px;">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+                <svg width="16" height="16" style="color:var(--orange);fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;"><use href="#ico-bulb"/></svg>
+                <span style="color:#fff;font-weight:800;font-size:.9rem;">Your tips this week</span>
+              </div>
+              <div style="font-size:.75rem;color:rgba(255,255,255,.5);">Sent every Monday morning</div>
+            </div>
+            <div style="padding:16px 20px;display:flex;flex-direction:column;gap:10px;flex:1;justify-content:space-between;">
+              <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;background:var(--green-light);flex:1;">
+                <svg width="18" height="18" style="color:var(--green2);fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;flex-shrink:0;"><use href="#ico-moon"/></svg>
+                <div><div style="font-weight:800;font-size:.85rem;color:var(--green);">Best time: 7–9 PM evenings</div><div style="font-size:.75rem;color:var(--muted);">Dinner rush - most orders of the day</div></div>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;background:var(--orange-pale);flex:1;">
+                <svg width="18" height="18" style="color:var(--orange);fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;flex-shrink:0;"><use href="#ico-zap"/></svg>
+                <div><div style="font-weight:800;font-size:.85rem;color:var(--orange);">Hot Zone: T. Nagar right now</div><div style="font-size:.75rem;color:var(--muted);">High orders, short distances</div></div>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;background:var(--red-light);flex:1;">
+                <svg width="18" height="18" style="color:var(--red2);fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;flex-shrink:0;"><use href="#ico-danger"/></svg>
+                <div><div style="font-weight:800;font-size:.85rem;color:var(--red2);">Avoid Wednesday - alert in city</div><div style="font-size:.75rem;color:var(--muted);">Stay home. Insurance is watching.</div></div>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;background:var(--blue-light);flex:1;">
+                <svg width="18" height="18" style="color:var(--blue2);fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;flex-shrink:0;"><use href="#ico-food"/></svg>
+                <div><div style="font-weight:800;font-size:.85rem;color:var(--blue);">Saturday lunch 12–2 PM - big surge</div><div style="font-size:.75rem;color:var(--muted);">Weekend lunch boom. Don't miss it.</div></div>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;background:#F5F0FF;flex:1;">
+                <svg width="18" height="18" style="color:#7C3AED;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;flex-shrink:0;"><use href="#ico-zap"/></svg>
+                <div><div style="font-weight:800;font-size:.85rem;color:#7C3AED;">Sunday 7–10 PM - highest surge of week</div><div style="font-size:.75rem;color:var(--muted);">Best earning window. Be ready.</div></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid-2" style="gap:12px;">
+            <div class="stat-card" style="padding:16px 18px;">
+              <div class="stat-icon"><svg width="24" height="24" style="color:var(--green2);fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;"><use href="#ico-trending"/></svg></div>
+              <div class="stat-val" style="font-size:1.6rem;">+15%</div>
+              <div class="stat-lbl">Extra money per week by following tips</div>
+            </div>
+            <div class="stat-card" style="padding:16px 18px;">
+              <div class="stat-icon"><svg width="24" height="24" style="color:var(--blue2);fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;"><use href="#ico-discount"/></svg></div>
+              <div class="stat-val" style="font-size:1.6rem;">−5%</div>
+              <div class="stat-lbl">Lower weekly charge for safe work habits</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="background:linear-gradient(135deg,var(--navy),var(--navy3));border-radius:16px;padding:24px 28px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;">
+        <div>
+          <div style="font-weight:800;font-size:1.1rem;color:#fff;margin-bottom:4px;">SmartWork tips come free with every plan</div>
+          <div style="font-size:.88rem;color:rgba(255,255,255,.6);">You get tips every Monday. Zero extra cost. Zero effort from you.</div>
+        </div>
+        <button class="btn btn-primary" onclick="showPub('pub-smartwork')" style="white-space:nowrap;">See Full SmartWork Page &rarr;</button>
+      </div>
+    </section>
+    </section>
+
+    <section style="background:var(--orange);padding:60px 6%;text-align:center;">
+      <h2 style="font-size:2rem;font-weight:800;color:#fff;margin-bottom:12px;">Start your protection today</h2>
+      <p style="color:rgba(255,255,255,.8);font-size:1rem;margin-bottom:28px;">Starting from ₹15/week. Stop anytime. Money in 48 hours.</p>
+      <button class="btn" style="background:#fff;color:var(--orange);font-size:1.1rem;" onclick="showPub('pub-signup')">Sign Up - It's Free to Start &rarr;</button>
+    </section>
+
+    <section class="pub-section gray">
+      <div class="section-tag">Questions</div>
+      <h2 class="section-title" style="margin-bottom:28px;">Simple answers</h2>
+      <div style="max-width:680px;">
+        <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">Do I need to fill any form to get my money?</div><div class="faq-a">No. We find out about the problem in your city on our own and open your claim for you. We check your earnings every day. When you are ready to get paid, we send the money. You do not do anything.</div></div>
+        <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">How do you know how much I earned?</div><div class="faq-a">When you sign up, you connect your delivery company account. We use that only to check if your money went down during a problem. We never share it with anyone else.</div></div>
+        <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">How much money will I get?</div><div class="faq-a">It depends on how many days your money was low. 5 days = 70% of your weekly cover amount. 6 days = 85%. 7 days = 100%. The exact amount depends on your plan - from ₹1,400 to ₹8,400.</div></div>
+        <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">Can I stop anytime?</div><div class="faq-a">Yes. Your plan is weekly. You can stop anytime. If you stop, your cover also stops from the next Monday.</div></div>
+        <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">What are SmartWork tips?</div><div class="faq-a">Every Monday we send you tips about when and where to work in your city to earn the most that week. Workers who follow the tips earn around 10–15% more each week.</div></div>
+      </div>
+    </section>
+
+    <footer>
+      <div class="footer-top">
+        <div><div class="footer-logo">Insure<span>On</span></div><div class="footer-desc">Money protection for delivery workers. Automatic. Fast. Built for real India.</div></div>
+        <div class="footer-links"><h4>Platform</h4><a href="#" onclick="showPub('pub-how')">How It Works</a><a href="#" onclick="showPub('pub-pricing')">Pricing</a><a href="#" onclick="showPub('pub-smartwork')">SmartWork</a><a href="#" onclick="showPub('pub-signup')">Sign Up</a></div>
+        <div class="footer-links"><h4>Support</h4><a href="#">Call: 1800-XXX-XXXX</a><a href="#">WhatsApp Support</a><a href="#">FAQ</a></div>
+        <div class="footer-links"><h4>Legal</h4><a href="#">Privacy Policy</a><a href="#">Rules of Use</a><a href="#">IRDAI License</a></div>
+      </div>
+      <div class="footer-bottom">© 2024 InsureOn. IRDAI Registered. All rights reserved.</div>
+    </footer>
+  </div>
+
+  <!-- ── HOW IT WORKS ── -->
+  <div id="pub-how">
+    <section class="hero" style="padding:70px 6% 80px;">
+      <div class="hero-kicker"><span></span>Simple process</div>
+      <h1 style="font-size:2.6rem;">How InsureOn Works</h1>
+      <p class="hero-sub">Three steps. No forms. Money in your UPI within 48 hours of qualifying.</p>
+    </section>
+    <section class="pub-section">
+      <div class="section-tag">The Process</div>
+      <h2 class="section-title">What happens when a problem hits your city</h2>
+      <div class="steps-grid" style="margin-bottom:48px;">
+        <div class="step-card"><div class="step-num">1</div><div class="step-icon"><div style="width:52px;height:52px;border-radius:14px;background:var(--orange-pale);display:flex;align-items:center;justify-content:center;"><svg width="26" height="26" style="color:var(--orange);fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;"><use href="#ico-warning"/></svg></div></div><div class="step-title">We spot the problem first</div><div class="step-body">Our system checks government alerts every 15 minutes. When a serious problem is declared in your city, we know within minutes.</div></div>
+        <div class="step-card"><div class="step-num">2</div><div class="step-icon"><div style="width:52px;height:52px;border-radius:14px;background:var(--blue-light);display:flex;align-items:center;justify-content:center;"><svg width="26" height="26" style="color:var(--blue2);fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;"><use href="#ico-clipboard"/></svg></div></div><div class="step-title">Your claim opens by itself</div><div class="step-body">We open your claim right away. No form, no call needed. We then start checking your daily money every night.</div></div>
+        <div class="step-card"><div class="step-num">3</div><div class="step-icon"><div style="width:52px;height:52px;border-radius:14px;background:var(--green-light);display:flex;align-items:center;justify-content:center;"><svg width="26" height="26" style="color:var(--green2);fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;"><use href="#ico-money"/></svg></div></div><div class="step-title">Money goes to your UPI</div><div class="step-body">If your money stays below half of normal for 5 days in a row - we send your payout straight to your UPI ID within 48–72 hours.</div></div>
+      </div>
+      <h2 class="section-title">How much will you get?</h2>
+      <p class="section-sub">The more days you lose, the more you get. Simple.</p>
+      <div class="card" style="max-width:600px;">
+        <div class="payout-row"><div class="p-days">1–4 days</div><div class="p-track"><div style="width:100%;height:100%;border-radius:8px;background:#F0F4F8;display:flex;align-items:center;padding:0 12px;"><span style="font-size:.78rem;color:var(--muted);font-weight:700;">No payout - not enough days yet</span></div></div></div>
+        <div class="payout-row"><div class="p-days">5 days</div><div class="p-track"><div class="p-fill" style="width:70%;background:var(--orange);"><span>70% of your cover</span></div></div></div>
+        <div class="payout-row"><div class="p-days">6 days</div><div class="p-track"><div class="p-fill" style="width:85%;background:var(--blue2);"><span>85% of your cover</span></div></div></div>
+        <div class="payout-row"><div class="p-days">7 days</div><div class="p-track"><div class="p-fill" style="width:100%;background:var(--green2);"><span>100% of your cover</span></div></div></div>
+      </div>
+    </section>
+    <section class="pub-section gray" style="text-align:center;">
+      <h2 class="section-title">Ready to get protected?</h2>
+      <p style="font-size:1rem;color:var(--muted);margin-bottom:28px;">Takes 2 minutes to sign up. Starts from ₹15/week.</p>
+      <button class="btn btn-primary" style="font-size:1.1rem;" onclick="showPub('pub-signup')">Create Free Account &rarr;</button>
+    </section>
+    <footer><div class="footer-top"><div><div class="footer-logo">Insure<span>On</span></div><div class="footer-desc">Money protection for delivery workers.</div></div></div><div class="footer-bottom">© 2024 InsureOn. IRDAI Registered.</div></footer>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       PRICING PAGE — ZONE + TIER based
+  ═══════════════════════════════════════════════════════════ -->
+  <div id="pub-pricing">
+    <section class="hero" style="padding:70px 6% 80px;">
+      <div class="hero-kicker"><span></span>Honest pricing</div>
+      <h1 style="font-size:2.6rem;">Plans that fit every worker</h1>
+      <p class="hero-sub">Your weekly charge depends on your city's risk zone and how many hours you work. No hidden fees. Stop anytime.</p>
+    </section>
+
+    <section class="pub-section">
+      <div class="section-tag">Choose Your Zone</div>
+      <h2 class="section-title">Select your city to see exact prices</h2>
+      <p class="section-sub">Your zone is set by your city. Cities with higher flood, storm, or disaster risk have higher premiums - because we pay out more often there.</p>
+
+      <!-- Zone Tabs -->
+      <div class="zone-tabs">
+        <button class="zone-tab active" onclick="switchZone('A',this)">
+          🔴 Zone A — High Risk
+          <span style="font-size:.76rem;font-weight:600;color:inherit;display:block;margin-top:2px;">Chennai · Mumbai · Kolkata · Delhi</span>
+        </button>
+        <button class="zone-tab" onclick="switchZone('B',this)">
+          🟡 Zone B — Moderate Risk
+          <span style="font-size:.76rem;font-weight:600;color:inherit;display:block;margin-top:2px;">Bengaluru · Hyderabad · Ahmedabad · Pune</span>
+        </button>
+        <button class="zone-tab" onclick="switchZone('C',this)">
+          🟢 Zone C — Low Risk
+          <span style="font-size:.76rem;font-weight:600;color:inherit;display:block;margin-top:2px;">Delhi · Pune · Jaipur</span>
+        </button>
+      </div>
+
+      <!-- ZONE A PRICING -->
+      <div class="zone-pricing active" id="zone-pricing-A">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;">
+          <span class="zone-badge-A"><span class="zone-dot" style="background:var(--red2);"></span>Zone A — High Risk</span>
+          <span style="font-size:.85rem;color:var(--muted);">Chennai, Mumbai, Kolkata, Delhi · Premium rate: 2.5% of coverage</span>
+        </div>
+        <div class="pricing-grid">
+          <!-- Tier 1 Zone A -->
+          <div class="price-card">
+            <div class="price-zone">Zone A · Part-time Workers</div>
+            <div class="price-title">Tier 1 — Part-time<br/><small style="font-size:.85rem;color:var(--muted);">10–25 hrs/week</small></div>
+            <div class="price-amount">₹35–₹70<small>/week</small></div>
+            <div class="price-coverage">Coverage up to ₹2,800 per bad week</div>
+            <table class="band-table">
+              <tr><th>Hours/week</th><th>Coverage</th><th>Premium</th></tr>
+              <tr><td>10–15 hrs</td><td class="band-cover">₹1,400</td><td class="band-price">₹35/wk</td></tr>
+              <tr><td>16–20 hrs</td><td class="band-cover">₹2,100</td><td class="band-price">₹50/wk</td></tr>
+              <tr><td>21–25 hrs</td><td class="band-cover">₹2,800</td><td class="band-price">₹70/wk</td></tr>
+            </table>
+            <ul class="price-features" style="margin-top:16px;">
+              <li>Automatic disaster detection</li>
+              <li>UPI payout in 48–72 hours</li>
+              <li>SmartWork tips every Monday</li>
+              <li>No forms ever</li>
+              <li>1 platform connected</li>
+              <li>Standard support (8 AM – 8 PM)</li>
+            </ul>
+            <button class="price-cta btn-navy" onclick="showPub('pub-signup')">Get Started</button>
+          </div>
+
+          <!-- Tier 2 Zone A — Featured -->
+          <div class="price-card featured">
+            <div class="price-zone">Zone A · Regular Workers</div>
+            <div class="price-title">Tier 2 — Regular<br/><small style="font-size:.85rem;color:var(--muted);">26–40 hrs/week</small></div>
+            <div class="price-amount" style="color:var(--orange);">₹90–₹130<small>/week</small></div>
+            <div class="price-coverage">Coverage up to ₹5,150 per bad week</div>
+            <table class="band-table">
+              <tr><th>Hours/week</th><th>Coverage</th><th>Premium</th></tr>
+              <tr><td>26–30 hrs</td><td class="band-cover">₹3,500</td><td class="band-price">₹90/wk</td></tr>
+              <tr><td>31–35 hrs</td><td class="band-cover">₹4,300</td><td class="band-price">₹110/wk</td></tr>
+              <tr><td>36–40 hrs</td><td class="band-cover">₹5,150</td><td class="band-price">₹130/wk</td></tr>
+            </table>
+            <ul class="price-features" style="margin-top:16px;">
+              <li>Automatic disaster detection</li>
+              <li>UPI payout in 48–72 hours</li>
+              <li>SmartWork tips + zone rotation plan</li>
+              <li>No forms ever</li>
+              <li>2 platforms connected simultaneously</li>
+              <li>Priority support + WhatsApp</li>
+            </ul>
+            <button class="price-cta" style="background:var(--orange);color:#fff;" onclick="showPub('pub-signup')">Get Started &rarr;</button>
+          </div>
+
+          <!-- Tier 3 Zone A -->
+          <div class="price-card">
+            <div class="price-zone">Zone A · Full-time Workers</div>
+            <div class="price-title">Tier 3 — Full-time<br/><small style="font-size:.85rem;color:var(--muted);">41+ hrs/week</small></div>
+            <div class="price-amount">₹150–₹210<small>/week</small></div>
+            <div class="price-coverage">Coverage up to ₹8,400 per bad week</div>
+            <table class="band-table">
+              <tr><th>Hours/week</th><th>Coverage</th><th>Premium</th></tr>
+              <tr><td>41–50 hrs</td><td class="band-cover">₹6,100</td><td class="band-price">₹150/wk</td></tr>
+              <tr><td>51–60 hrs</td><td class="band-cover">₹7,150</td><td class="band-price">₹180/wk</td></tr>
+              <tr><td>61–70 hrs</td><td class="band-cover">₹8,050</td><td class="band-price">₹200/wk</td></tr>
+              <tr><td>71+ hrs</td><td class="band-cover">₹8,400</td><td class="band-price">₹210/wk</td></tr>
+            </table>
+            <ul class="price-features" style="margin-top:16px;">
+              <li>Automatic disaster detection</li>
+              <li>UPI payout in 48–72 hours</li>
+              <li>SmartWork tips + full shift planner</li>
+              <li>No forms ever</li>
+              <li>All platforms tracked together</li>
+              <li>Priority support + dedicated callback</li>
+            </ul>
+            <button class="price-cta btn-navy" onclick="showPub('pub-signup')">Get Started</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ZONE B PRICING -->
+      <div class="zone-pricing" id="zone-pricing-B">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;">
+          <span class="zone-badge-B"><span class="zone-dot" style="background:#E65100;"></span>Zone B — Moderate Risk</span>
+          <span style="font-size:.85rem;color:var(--muted);">Bengaluru, Hyderabad, Ahmedabad, Pune · Premium rate: 1.7% of coverage</span>
+        </div>
+        <div class="pricing-grid">
+          <!-- Tier 1 Zone B -->
+          <div class="price-card">
+            <div class="price-zone">Zone B · Part-time Workers</div>
+            <div class="price-title">Tier 1 — Part-time<br/><small style="font-size:.85rem;color:var(--muted);">10–25 hrs/week</small></div>
+            <div class="price-amount">₹25–₹50<small>/week</small></div>
+            <div class="price-coverage">Coverage up to ₹2,800 per bad week</div>
+            <table class="band-table">
+              <tr><th>Hours/week</th><th>Coverage</th><th>Premium</th></tr>
+              <tr><td>10–15 hrs</td><td class="band-cover">₹1,400</td><td class="band-price">₹25/wk</td></tr>
+              <tr><td>16–20 hrs</td><td class="band-cover">₹2,100</td><td class="band-price">₹35/wk</td></tr>
+              <tr><td>21–25 hrs</td><td class="band-cover">₹2,800</td><td class="band-price">₹50/wk</td></tr>
+            </table>
+            <ul class="price-features" style="margin-top:16px;">
+              <li>Automatic disaster detection</li>
+              <li>UPI payout in 48–72 hours</li>
+              <li>SmartWork tips every Monday</li>
+              <li>No forms ever</li>
+              <li>1 platform connected</li>
+              <li>Standard support (8 AM – 8 PM)</li>
+            </ul>
+            <button class="price-cta btn-navy" onclick="showPub('pub-signup')">Get Started</button>
+          </div>
+
+          <!-- Tier 2 Zone B — Featured -->
+          <div class="price-card featured">
+            <div class="price-zone">Zone B · Regular Workers</div>
+            <div class="price-title">Tier 2 — Regular<br/><small style="font-size:.85rem;color:var(--muted);">26–40 hrs/week</small></div>
+            <div class="price-amount" style="color:var(--orange);">₹60–₹90<small>/week</small></div>
+            <div class="price-coverage">Coverage up to ₹5,150 per bad week</div>
+            <table class="band-table">
+              <tr><th>Hours/week</th><th>Coverage</th><th>Premium</th></tr>
+              <tr><td>26–30 hrs</td><td class="band-cover">₹3,500</td><td class="band-price">₹60/wk</td></tr>
+              <tr><td>31–35 hrs</td><td class="band-cover">₹4,300</td><td class="band-price">₹75/wk</td></tr>
+              <tr><td>36–40 hrs</td><td class="band-cover">₹5,150</td><td class="band-price">₹90/wk</td></tr>
+            </table>
+            <ul class="price-features" style="margin-top:16px;">
+              <li>Automatic disaster detection</li>
+              <li>UPI payout in 48–72 hours</li>
+              <li>SmartWork tips + zone rotation plan</li>
+              <li>No forms ever</li>
+              <li>2 platforms connected simultaneously</li>
+              <li>Priority support + WhatsApp</li>
+            </ul>
+            <button class="price-cta" style="background:var(--orange);color:#fff;" onclick="showPub('pub-signup')">Get Started &rarr;</button>
+          </div>
+
+          <!-- Tier 3 Zone B -->
+          <div class="price-card">
+            <div class="price-zone">Zone B · Full-time Workers</div>
+            <div class="price-title">Tier 3 — Full-time<br/><small style="font-size:.85rem;color:var(--muted);">41+ hrs/week</small></div>
+            <div class="price-amount">₹105–₹145<small>/week</small></div>
+            <div class="price-coverage">Coverage up to ₹8,400 per bad week</div>
+            <table class="band-table">
+              <tr><th>Hours/week</th><th>Coverage</th><th>Premium</th></tr>
+              <tr><td>41–50 hrs</td><td class="band-cover">₹6,100</td><td class="band-price">₹105/wk</td></tr>
+              <tr><td>51–60 hrs</td><td class="band-cover">₹7,150</td><td class="band-price">₹120/wk</td></tr>
+              <tr><td>61–70 hrs</td><td class="band-cover">₹8,050</td><td class="band-price">₹135/wk</td></tr>
+              <tr><td>71+ hrs</td><td class="band-cover">₹8,400</td><td class="band-price">₹145/wk</td></tr>
+            </table>
+            <ul class="price-features" style="margin-top:16px;">
+              <li>Automatic disaster detection</li>
+              <li>UPI payout in 48–72 hours</li>
+              <li>SmartWork tips + full shift planner</li>
+              <li>No forms ever</li>
+              <li>All platforms tracked together</li>
+              <li>Priority support + dedicated callback</li>
+            </ul>
+            <button class="price-cta btn-navy" onclick="showPub('pub-signup')">Get Started</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ZONE C PRICING -->
+      <div class="zone-pricing" id="zone-pricing-C">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;">
+          <span class="zone-badge-C"><span class="zone-dot" style="background:var(--green2);"></span>Zone C — Low Risk</span>
+          <span style="font-size:.85rem;color:var(--muted);">Delhi, Pune, Jaipur · Premium rate: 1.2% of coverage</span>
+        </div>
+        <div class="pricing-grid">
+          <!-- Tier 1 Zone C -->
+          <div class="price-card">
+            <div class="price-zone">Zone C · Part-time Workers</div>
+            <div class="price-title">Tier 1 — Part-time<br/><small style="font-size:.85rem;color:var(--muted);">10–25 hrs/week</small></div>
+            <div class="price-amount">₹15–₹35<small>/week</small></div>
+            <div class="price-coverage">Coverage up to ₹2,800 per bad week</div>
+            <table class="band-table">
+              <tr><th>Hours/week</th><th>Coverage</th><th>Premium</th></tr>
+              <tr><td>10–15 hrs</td><td class="band-cover">₹1,400</td><td class="band-price">₹15/wk</td></tr>
+              <tr><td>16–20 hrs</td><td class="band-cover">₹2,100</td><td class="band-price">₹25/wk</td></tr>
+              <tr><td>21–25 hrs</td><td class="band-cover">₹2,800</td><td class="band-price">₹35/wk</td></tr>
+            </table>
+            <ul class="price-features" style="margin-top:16px;">
+              <li>Automatic disaster detection</li>
+              <li>UPI payout in 48–72 hours</li>
+              <li>SmartWork tips every Monday</li>
+              <li>No forms ever</li>
+              <li>1 platform connected</li>
+              <li>Standard support (8 AM – 8 PM)</li>
+            </ul>
+            <button class="price-cta btn-navy" onclick="showPub('pub-signup')">Get Started</button>
+          </div>
+
+          <!-- Tier 2 Zone C — Featured -->
+          <div class="price-card featured">
+            <div class="price-zone">Zone C · Regular Workers</div>
+            <div class="price-title">Tier 2 — Regular<br/><small style="font-size:.85rem;color:var(--muted);">26–40 hrs/week</small></div>
+            <div class="price-amount" style="color:var(--orange);">₹40–₹60<small>/week</small></div>
+            <div class="price-coverage">Coverage up to ₹5,150 per bad week</div>
+            <table class="band-table">
+              <tr><th>Hours/week</th><th>Coverage</th><th>Premium</th></tr>
+              <tr><td>26–30 hrs</td><td class="band-cover">₹3,500</td><td class="band-price">₹40/wk</td></tr>
+              <tr><td>31–35 hrs</td><td class="band-cover">₹4,300</td><td class="band-price">₹50/wk</td></tr>
+              <tr><td>36–40 hrs</td><td class="band-cover">₹5,150</td><td class="band-price">₹60/wk</td></tr>
+            </table>
+            <ul class="price-features" style="margin-top:16px;">
+              <li>Automatic disaster detection</li>
+              <li>UPI payout in 48–72 hours</li>
+              <li>SmartWork tips + zone rotation plan</li>
+              <li>No forms ever</li>
+              <li>2 platforms connected simultaneously</li>
+              <li>Priority support + WhatsApp</li>
+            </ul>
+            <button class="price-cta" style="background:var(--orange);color:#fff;" onclick="showPub('pub-signup')">Get Started &rarr;</button>
+          </div>
+
+          <!-- Tier 3 Zone C -->
+          <div class="price-card">
+            <div class="price-zone">Zone C · Full-time Workers</div>
+            <div class="price-title">Tier 3 — Full-time<br/><small style="font-size:.85rem;color:var(--muted);">41+ hrs/week</small></div>
+            <div class="price-amount">₹75–₹100<small>/week</small></div>
+            <div class="price-coverage">Coverage up to ₹8,400 per bad week</div>
+            <table class="band-table">
+              <tr><th>Hours/week</th><th>Coverage</th><th>Premium</th></tr>
+              <tr><td>41–50 hrs</td><td class="band-cover">₹6,100</td><td class="band-price">₹75/wk</td></tr>
+              <tr><td>51–60 hrs</td><td class="band-cover">₹7,150</td><td class="band-price">₹85/wk</td></tr>
+              <tr><td>61–70 hrs</td><td class="band-cover">₹8,050</td><td class="band-price">₹95/wk</td></tr>
+              <tr><td>71+ hrs</td><td class="band-cover">₹8,400</td><td class="band-price">₹100/wk</td></tr>
+            </table>
+            <ul class="price-features" style="margin-top:16px;">
+              <li>Automatic disaster detection</li>
+              <li>UPI payout in 48–72 hours</li>
+              <li>SmartWork tips + full shift planner</li>
+              <li>No forms ever</li>
+              <li>All platforms tracked together</li>
+              <li>Priority support + dedicated callback</li>
+            </ul>
+            <button class="price-cta btn-navy" onclick="showPub('pub-signup')">Get Started</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Discounts & Loadings box -->
+      <div class="card" style="margin-top:32px;background:var(--blue-light);border:2px solid var(--blue2);">
+        <div style="font-family:'Open Sans',sans-serif;font-size:1.1rem;font-weight:800;color:var(--blue);margin-bottom:12px;display:flex;align-items:center;gap:8px;">
+          <svg width="20" height="20" style="color:var(--blue2);fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;flex-shrink:0;"><use href="#ico-discount"/></svg>
+          Price reductions &amp; loadings
+        </div>
+        <div class="grid-2">
+          <div style="font-size:.88rem;color:var(--text);line-height:2.2;">
+            <span style="color:var(--green);font-weight:700;">✓</span> No claims in 6 months → <strong>−10%</strong><br/>
+            <span style="color:var(--green);font-weight:700;">✓</span> Multi-platform worker → <strong>−5%</strong><br/>
+            <span style="color:var(--green);font-weight:700;">✓</span> Pay 1 year upfront → <strong>−8%</strong><br/>
+            <span style="color:var(--green);font-weight:700;">✓</span> Low risk score → <strong>−15%</strong>
+          </div>
+          <div style="font-size:.88rem;color:var(--text);line-height:2.2;">
+            <span style="color:var(--orange);font-weight:700;">▲</span> Coastal / flood zone pincode → <strong>+20–30%</strong><br/>
+            <span style="color:var(--orange);font-weight:700;">▲</span> Shorter 12hr waiting period → <strong>+15%</strong><br/>
+            <span style="color:var(--red2);font-weight:700;">▲</span> Very high risk score → <strong>+40%</strong>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer><div class="footer-top"><div><div class="footer-logo">Insure<span>On</span></div><div class="footer-desc">Money protection for delivery workers.</div></div></div><div class="footer-bottom">© 2024 InsureOn. IRDAI Registered.</div></footer>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SMARTWORK PUBLIC PAGE (FULL)
+  ══════════════════════════════════════════════════════════ -->
+  <div id="pub-smartwork">
+
+    <!-- HERO -->
+    <section class="sw-hero">
+      <div class="sw-hero-kicker"><span></span>Free with every plan</div>
+      <h1 style="font-size:clamp(2.2rem,5vw,3.4rem);font-weight:800;color:#fff;line-height:1.1;margin-bottom:18px;max-width:620px;">
+        Don't just <em style="color:#81C784;font-style:normal;">protect</em> your money.<br/>
+        <em style="color:var(--orange);font-style:normal;">Grow</em> it every week.
+      </h1>
+      <p style="font-size:1.05rem;color:rgba(255,255,255,.7);max-width:520px;line-height:1.7;margin-bottom:28px;">SmartWork gives every InsureOn member personalised weekly tips - best time to work, best zones in your city, when to avoid going out. Zero effort. Delivered every Monday.</p>
+      <div style="display:flex;gap:14px;flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="showPub('pub-signup')">Get SmartWork Free &rarr;</button>
+        <button class="btn btn-outline" onclick="showPub('pub-pricing')">See plans</button>
+      </div>
+      <div class="sw-stat-strip">
+        <div class="sw-stat-pill">
+          <div><div class="ssp-val">+15%</div><div class="ssp-lbl">Extra earnings per week</div></div>
+        </div>
+        <div class="sw-stat-pill">
+          <div><div class="ssp-val">−5%</div><div class="ssp-lbl">Premium for safe habits</div></div>
+        </div>
+        <div class="sw-stat-pill">
+          <div><div class="ssp-val">₹0</div><div class="ssp-lbl">Extra cost - fully free</div></div>
+        </div>
+        <div class="sw-stat-pill">
+          <div><div class="ssp-val">Every Mon</div><div class="ssp-lbl">Tips delivered weekly</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- WHAT SMARTWORK DOES -->
+    <section class="pub-section gray">
+      <div class="section-tag">Sample Tips</div>
+      <h2 class="section-title">See what your Monday tips look like</h2>
+      <p class="section-sub">Tips are personalised based on whether you work part-time or full-time. Here is a real example for each type of worker.</p>
+
+      <!-- Persona Tabs -->
+      <div class="sw-tabs">
+        <button class="sw-tab active" onclick="switchSwTab(this,'sw-tab-parttime')">
+          <svg width="14" height="14" style="display:inline;vertical-align:middle;margin-right:4px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;"><use href="#ico-clock"/></svg>
+          Part-time Worker (Sandeep)
+        </button>
+        <button class="sw-tab" onclick="switchSwTab(this,'sw-tab-fulltime')">
+          <svg width="14" height="14" style="display:inline;vertical-align:middle;margin-right:4px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;"><use href="#ico-trophy"/></svg>
+          Full-time Worker (Sriram)
+        </button>
+      </div>
+
+      <!-- Part-time Tab — FIX: grid-2 with both cols as flex columns matching height -->
+      <div class="sw-tab-content active" id="sw-tab-parttime">
+        <!-- grid-2 with align-items:stretch so both columns are same height -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:stretch;">
+          <!-- LEFT: week-sample fills full column height -->
+          <div class="week-sample" style="height:100%;">
+            <div class="ws-header">
+              <div class="ws-header-left">
+                <span>SmartWork Tips - This Week</span>
+                <small>Sent Monday 8:00 AM · Chennai · Sandeep</small>
+              </div>
+              <div class="ws-persona-tag">
+                <svg width="12" height="12" style="fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;"><use href="#ico-clock"/></svg>
+                Part-time
+              </div>
+            </div>
+            <div class="ws-body">
+              <div class="ws-tip" style="background:var(--green-light);">
+                <div class="ws-tip-icon" style="background:var(--green2);">
+                  <svg width="16" height="16" style="color:#fff;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;"><use href="#ico-moon"/></svg>
+                </div>
+                <div>
+                  <div class="ws-tip-title" style="color:var(--green);">Best Time: Weekday evenings 7–9 PM</div>
+                  <div class="ws-tip-body">Dinner rush - highest order density. Best money per hour of the whole day.</div>
+                </div>
+              </div>
+              <div class="ws-tip" style="background:var(--orange-pale);">
+                <div class="ws-tip-icon" style="background:var(--orange);">
+                  <svg width="16" height="16" style="color:#fff;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;"><use href="#ico-food"/></svg>
+                </div>
+                <div>
+                  <div class="ws-tip-title" style="color:var(--orange);">Surge: Saturday 12–2 PM</div>
+                  <div class="ws-tip-body">Weekend lunch is big this week. Lots of orders in T. Nagar. Don't miss it.</div>
+                </div>
+              </div>
+              <div class="ws-tip" style="background:var(--blue-light);">
+                <div class="ws-tip-icon" style="background:var(--blue2);">
+                  <svg width="16" height="16" style="color:#fff;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;"><use href="#ico-zap"/></svg>
+                </div>
+                <div>
+                  <div class="ws-tip-title" style="color:var(--blue);">Sunday 7–10 PM - Highest surge</div>
+                  <div class="ws-tip-body">Best earning window of the entire week. Be ready.</div>
+                </div>
+              </div>
+              <div class="ws-tip" style="background:#F5F5F5;">
+                <div class="ws-tip-icon" style="background:var(--muted);">
+                  <svg width="16" height="16" style="color:#fff;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;"><use href="#ico-sleep"/></svg>
+                </div>
+                <div>
+                  <div class="ws-tip-title" style="color:var(--muted);">Avoid 2–5 PM on weekdays</div>
+                  <div class="ws-tip-body">Very few orders. High fuel cost. Rest and come back for evening rush.</div>
+                </div>
+              </div>
+              <div class="ws-tip" style="background:var(--red-light);">
+                <div class="ws-tip-icon" style="background:var(--red2);">
+                  <svg width="16" height="16" style="color:#fff;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;"><use href="#ico-rain"/></svg>
+                </div>
+                <div>
+                  <div class="ws-tip-title" style="color:var(--red2);">⚠ Stay home Wednesday - City alert</div>
+                  <div class="ws-tip-body">IMD alert active. Roads not safe. Your cover is watching earnings.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT: flex column, target card (flex:1) + safe behavior card (flex:2) to fill same total height -->
+          <div style="display:flex;flex-direction:column;gap:16px;height:100%;">
+            <div class="card" style="background:linear-gradient(135deg,var(--navy),var(--navy3));color:#fff;flex:1;display:flex;flex-direction:column;justify-content:center;">
+              <div style="font-size:.8rem;color:rgba(255,255,255,.6);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">This Week's Target</div>
+              <div style="font-family:'Open Sans',sans-serif;font-size:2rem;font-weight:800;color:var(--orange);">+₹600–₹800</div>
+              <div style="font-size:.85rem;color:rgba(255,255,255,.7);margin-top:4px;line-height:1.6;">Estimated extra earnings vs working random hours - by concentrating on recommended slots.</div>
+            </div>
+            <div class="card" style="flex:2;display:flex;flex-direction:column;">
+              <div style="font-weight:800;font-size:.95rem;color:var(--navy);margin-bottom:12px;display:flex;align-items:center;gap:8px;">
+                <svg width="16" height="16" style="color:var(--green2);fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;flex-shrink:0;"><use href="#ico-discount"/></svg>
+                Safe behavior → lower premium
+              </div>
+              <div style="font-size:.85rem;color:var(--muted);line-height:1.7;margin-bottom:14px;">When you follow weather avoidance tips and stay home during city alerts - your personal risk score drops, and so does your weekly charge.</div>
+              <div style="margin-top:auto;">
+                <div class="discount-row"><div class="dr-behavior"><svg width="14" height="14" style="color:var(--green2);fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;flex-shrink:0;"><use href="#ico-check"/></svg> Follow weather avoidance tips</div><div class="dr-discount">−0.2 risk score</div></div>
+                <div class="discount-row"><div class="dr-behavior"><svg width="14" height="14" style="color:var(--green2);fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;flex-shrink:0;"><use href="#ico-check"/></svg> Stay home during IMD alerts</div><div class="dr-discount">−0.3 risk score</div></div>
+                <div class="discount-row"><div class="dr-behavior"><svg width="14" height="14" style="color:var(--green2);fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;flex-shrink:0;"><use href="#ico-check"/></svg> Consistent safe slots</div><div class="dr-discount">−5% premium</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Full-time Tab — FIX: same pattern -->
+      <div class="sw-tab-content" id="sw-tab-fulltime">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:stretch;">
+          <!-- LEFT: week-sample fills full height -->
+          <div class="week-sample" style="height:100%;">
+            <div class="ws-header">
+              <div class="ws-header-left">
+                <span>SmartWork Tips - This Week</span>
+                <small>Sent Monday 8:00 AM · Chennai · Sriram</small>
+              </div>
+              <div class="ws-persona-tag">
+                <svg width="12" height="12" style="fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;"><use href="#ico-trophy"/></svg>
+                Full-time
+              </div>
+            </div>
+            <div class="ws-body">
+              <div class="ws-tip" style="background:var(--orange-pale);">
+                <div class="ws-tip-icon" style="background:var(--orange);">
+                  <svg width="16" height="16" style="color:#fff;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;"><use href="#ico-zap"/></svg>
+                </div>
+                <div>
+                  <div class="ws-tip-title" style="color:var(--orange);">Shift structure: Late morning + Evening</div>
+                  <div class="ws-tip-body">Split shifts recommended. Avoid mid-afternoon - low orders, high fuel cost per delivery.</div>
+                </div>
+              </div>
+              <div class="ws-tip" style="background:var(--blue-light);">
+                <div class="ws-tip-icon" style="background:var(--blue2);">
+                  <svg width="16" height="16" style="color:#fff;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;"><use href="#ico-map"/></svg>
+                </div>
+                <div>
+                  <div class="ws-tip-title" style="color:var(--blue);">zone rotation: Office → Residential → Weekend zones</div>
+                  <div class="ws-tip-body">Weekdays: office zones for lunch. Evenings: residential for dinner. Weekends: shopping / entertainment zones.</div>
+                </div>
+              </div>
+              <div class="ws-tip" style="background:var(--yellow-light);">
+                <div class="ws-tip-icon" style="background:var(--yellow);">
+                  <svg width="16" height="16" style="color:#fff;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;"><use href="#ico-rain"/></svg>
+                </div>
+                <div>
+                  <div class="ws-tip-title" style="color:var(--yellow);">Light rain this Thursday - surge opportunity</div>
+                  <div class="ws-tip-body">Worth staying out. Light rain increases order volume. Wrap up before heavy rain window 6 PM.</div>
+                </div>
+              </div>
+              <div class="ws-tip" style="background:var(--green-light);">
+                <div class="ws-tip-icon" style="background:var(--green2);">
+                  <svg width="16" height="16" style="color:#fff;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;"><use href="#ico-moon"/></svg>
+                </div>
+                <div>
+                  <div class="ws-tip-title" style="color:var(--green);">Night shifts Fri & Sat - highest earning potential</div>
+                  <div class="ws-tip-body">Weekend nights = most orders of the week. Best pay per hour for full-time workers.</div>
+                </div>
+              </div>
+              <div class="ws-tip" style="background:var(--red-light);">
+                <div class="ws-tip-icon" style="background:var(--red2);">
+                  <svg width="16" height="16" style="color:#fff;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;"><use href="#ico-warning"/></svg>
+                </div>
+                <div>
+                  <div class="ws-tip-title" style="color:var(--red2);">Active weather watch this week - keep insurance on</div>
+                  <div class="ws-tip-body">Higher payout probability this week. Don't cancel your plan now.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT: flex column matching total height of left -->
+          <div style="display:flex;flex-direction:column;gap:16px;height:100%;">
+            <div class="card" style="background:linear-gradient(135deg,var(--navy),var(--navy3));color:#fff;flex:1;display:flex;flex-direction:column;justify-content:center;">
+              <div style="font-size:.8rem;color:rgba(255,255,255,.6);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">This Week's Target</div>
+              <div style="font-family:'Open Sans',sans-serif;font-size:2rem;font-weight:800;color:var(--orange);">+₹1,000–₹2,000</div>
+              <div style="font-size:.85rem;color:rgba(255,255,255,.7);margin-top:4px;line-height:1.6;">Extra per week by shifting zones - without adding a single extra hour of work.</div>
+            </div>
+            <div class="card" style="flex:2;display:flex;flex-direction:column;">
+              <div style="font-weight:800;font-size:.95rem;color:var(--navy);margin-bottom:10px;">zone Rotation Strategy</div>
+              <div style="font-size:.83rem;color:var(--muted);line-height:1.8;">
+                <div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);">
+                  <span style="width:8px;height:8px;border-radius:50%;background:var(--blue2);flex-shrink:0;display:inline-block;"></span>
+                  <strong>Weekday lunch</strong> → Office + commercial zones
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);">
+                  <span style="width:8px;height:8px;border-radius:50%;background:var(--orange);flex-shrink:0;display:inline-block;"></span>
+                  <strong>Evenings</strong> → Residential + dining zones
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);">
+                  <span style="width:8px;height:8px;border-radius:50%;background:var(--green2);flex-shrink:0;display:inline-block;"></span>
+                  <strong>Weekends</strong> → Shopping + entertainment zones
+                </div>
+              </div>
+
+              <!-- Why it works -->
+              <div style="margin-top:16px;padding:12px 14px;background:var(--orange-pale);border-radius:10px;">
+                <div style="font-weight:800;font-size:.82rem;color:var(--navy);margin-bottom:6px;">💡 Why this works</div>
+                <div style="font-size:.8rem;color:var(--muted);line-height:1.65;">Order density varies by zone type, not just time. Matching your location to the right demand type can increase your order rate by <strong style="color:var(--navy);">20–35%</strong> without riding extra hours.</div>
+              </div>
+
+              <!-- Avg uplift stats -->
+              <div style="margin-top:14px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;flex:1;align-items:end;">
+                <div style="padding:10px 12px;background:var(--bg);border-radius:10px;text-align:center;">
+                  <div style="font-size:1.15rem;font-weight:800;color:var(--blue2);">+22%</div>
+                  <div style="font-size:.72rem;color:var(--muted);margin-top:3px;line-height:1.4;">Orders during lunch shift</div>
+                </div>
+                <div style="padding:10px 12px;background:var(--bg);border-radius:10px;text-align:center;">
+                  <div style="font-size:1.15rem;font-weight:800;color:var(--orange);">+31%</div>
+                  <div style="font-size:.72rem;color:var(--muted);margin-top:3px;line-height:1.4;">Earnings on weekend zones</div>
+                </div>
+                <div style="padding:10px 12px;background:var(--bg);border-radius:10px;text-align:center;">
+                  <div style="font-size:1.15rem;font-weight:800;color:var(--green2);">−18%</div>
+                  <div style="font-size:.72rem;color:var(--muted);margin-top:3px;line-height:1.4;">Idle wait time per shift</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- HOW SMARTWORK DATA IS BUILT -->
+    <section class="pub-section">
+      <div class="section-tag">Behind the Tips</div>
+      <h2 class="section-title">What we use to build your tips</h2>
+      <p class="section-sub">Every tip is built from real data - not guesses. Here is exactly what feeds into your Monday report each week.</p>
+
+      <div class="grid-3" style="margin-bottom:32px;">
+        <div class="card" style="padding:26px 22px;">
+          <div style="width:48px;height:48px;border-radius:14px;background:var(--orange-pale);display:flex;align-items:center;justify-content:center;margin-bottom:16px;">
+            <svg width="24" height="24" style="color:var(--orange);fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;"><use href="#ico-chart"/></svg>
+          </div>
+          <div style="font-weight:800;font-size:1rem;color:var(--navy);margin-bottom:8px;">Platform Order History</div>
+          <div style="font-size:.86rem;color:var(--muted);line-height:1.6;margin-bottom:14px;">We pull order density and peak hour data from delivery companies API's to identify when and where orders are highest in your city.</div>
+          <div>
+            <span class="data-source-tag">Swiggy API</span>
+            <span class="data-source-tag">Zomato API</span>
+            <span class="data-source-tag">Blinkit API</span>
+            <span class="data-source-tag">Dunzo API</span>
+          </div>
+        </div>
+        <div class="card" style="padding:26px 22px;">
+          <div style="width:48px;height:48px;border-radius:14px;background:var(--blue-light);display:flex;align-items:center;justify-content:center;margin-bottom:16px;">
+            <svg width="24" height="24" style="color:var(--blue2);fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;"><use href="#ico-rain"/></svg>
+          </div>
+          <div style="font-weight:800;font-size:1rem;color:var(--navy);margin-bottom:8px;">IMD Weather Forecast</div>
+          <div style="font-size:.86rem;color:var(--muted);line-height:1.6;margin-bottom:14px;">We read your city's 5-day weather forecast from IMD every 15 minutes. We translate the forecast into simple work windows - safe hours, surge hours, stop hours.</div>
+          <div>
+            <span class="data-source-tag">IMD Forecast API</span>
+            <span class="data-source-tag">IMD Nowcast API</span>
+          </div>
+        </div>
+        <div class="card" style="padding:26px 22px;">
+          <div style="width:48px;height:48px;border-radius:14px;background:var(--green-light);display:flex;align-items:center;justify-content:center;margin-bottom:16px;">
+            <svg width="24" height="24" style="color:var(--green2);fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;"><use href="#ico-calendar"/></svg>
+          </div>
+          <div style="font-weight:800;font-size:1rem;color:var(--navy);margin-bottom:8px;">City Event Calendar</div>
+          <div style="font-size:.86rem;color:var(--muted);line-height:1.6;margin-bottom:14px;">Festivals, cricket matches, concerts, and local events cause order spikes. We track these city events and alert you days before so you can plan ahead.</div>
+          <div>
+            <span class="data-source-tag">City Events</span>
+            <span class="data-source-tag">NDMA Alerts</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card" style="padding:26px 22px;">
+          <div style="width:48px;height:48px;border-radius:14px;background:var(--orange-pale);display:flex;align-items:center;justify-content:center;margin-bottom:16px;">
+            <svg width="24" height="24" style="color:var(--orange);fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;"><use href="#ico-user"/></svg>
+          </div>
+          <div style="font-weight:800;font-size:1rem;color:var(--navy);margin-bottom:8px;">Your Own Past Earnings</div>
+          <div style="font-size:.86rem;color:var(--muted);line-height:1.6;">We look at your personal earning history from the last 4 weeks to give you personalised slot recommendations - not generic advice. Your tips are different from another worker's tips in the same city.</div>
+        </div>
+        <div class="card" style="padding:26px 22px;">
+          <div style="width:48px;height:48px;border-radius:14px;background:var(--red-light);display:flex;align-items:center;justify-content:center;margin-bottom:16px;">
+            <svg width="24" height="24" style="color:var(--red2);fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;"><use href="#ico-warning"/></svg>
+          </div>
+          <div style="font-weight:800;font-size:1rem;color:var(--navy);margin-bottom:8px;">NDMA Risk Advisories</div>
+          <div style="font-size:.86rem;color:var(--muted);line-height:1.6;">When government disaster alerts are active in your pincode, we switch to safety-first mode. You get a clear advisory to stay home. Your insurance keeps watching while you rest.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- HOW TIPS ARE DELIVERED -->
+    <section class="pub-section gray">
+      <div class="section-tag">Delivery Channels</div>
+      <h2 class="section-title">How your tips reach you</h2>
+      <p class="section-sub">You don't need to check anything. We bring the tips to you - through the channel that works best for you.</p>
+
+      <div class="grid-4">
+        <div class="card" style="text-align:center;padding:28px 18px;">
+          <div style="width:52px;height:52px;border-radius:16px;background:var(--orange-pale);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;">
+            <svg width="26" height="26" style="color:var(--orange);fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;"><use href="#ico-bell"/></svg>
+          </div>
+          <div style="font-weight:800;font-size:.95rem;color:var(--navy);margin-bottom:6px;">Push Notification</div>
+          <div style="font-size:.82rem;color:var(--muted);line-height:1.5;">Every Monday morning - your full weekly tips delivered to the app.</div>
+        </div>
+        <div class="card" style="text-align:center;padding:28px 18px;">
+          <div style="width:52px;height:52px;border-radius:16px;background:var(--blue-light);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;">
+            <svg width="26" height="26" style="color:var(--blue2);fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;"><use href="#ico-pin"/></svg>
+          </div>
+          <div style="font-weight:800;font-size:.95rem;color:var(--navy);margin-bottom:6px;">Live Surge Map</div>
+          <div style="font-size:.82rem;color:var(--muted);line-height:1.5;">In-app dashboard showing hot zones in your city, updated daily.</div>
+        </div>
+        <div class="card" style="text-align:center;padding:28px 18px;">
+          <div style="width:52px;height:52px;border-radius:16px;background:var(--green-light);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;">
+            <svg width="26" height="26" style="color:var(--green2);fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;"><use href="#ico-sms"/></svg>
+          </div>
+          <div style="font-weight:800;font-size:.95rem;color:var(--navy);margin-bottom:6px;">SMS Alert</div>
+          <div style="font-size:.82rem;color:var(--muted);line-height:1.5;">Urgent advisories when IMD issues a Red or Orange alert in your city.</div>
+        </div>
+        <div class="card" style="text-align:center;padding:28px 18px;">
+          <div style="width:52px;height:52px;border-radius:16px;background:var(--yellow-light);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;">
+            <svg width="26" height="26" style="color:var(--yellow);fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;"><use href="#ico-chart"/></svg>
+          </div>
+          <div style="font-weight:800;font-size:.95rem;color:var(--navy);margin-bottom:6px;">Weekly Report</div>
+          <div style="font-size:.82rem;color:var(--muted);line-height:1.5;">Your actual earnings vs SmartWork projected earnings - every Sunday night.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- IMPACT NUMBERS -->
+    <section class="pub-section">
+      <div class="section-tag">SmartWork Impact</div>
+      <h2 class="section-title">What SmartWork actually does for your earnings</h2>
+      <p class="section-sub">The numbers below are from workers who follow SmartWork tips consistently for 4+ weeks versus those who don't.</p>
+
+      <div class="grid-4" style="margin-bottom:32px;">
+        <div class="impact-card">
+          <div class="impact-val">+15%</div>
+          <div class="impact-lbl">Extra earnings per week by following recommended time slots</div>
+        </div>
+        <div class="impact-card" style="border-top-color:var(--blue2);">
+          <div class="impact-val" style="color:var(--blue2);">+₹2,000</div>
+          <div class="impact-lbl">Maximum extra income per week for full-time workers following zone rotation</div>
+        </div>
+        <div class="impact-card" style="border-top-color:var(--green2);">
+          <div class="impact-val" style="color:var(--green2);">−5%</div>
+          <div class="impact-lbl">Premium reduction for workers consistently following safe slot tips</div>
+        </div>
+        <div class="impact-card" style="border-top-color:var(--navy);">
+          <div class="impact-val" style="color:var(--navy);">₹0</div>
+          <div class="impact-lbl">Extra cost - SmartWork is free with every InsureOn plan</div>
+        </div>
+      </div>
+
+      <div class="card" style="background:linear-gradient(135deg,#F0F9F0,#E8F5E9);border:2px solid var(--green2);padding:0;overflow:hidden;">
+        <div style="display:flex;align-items:stretch;flex-wrap:wrap;">
+          <div style="flex:1;min-width:220px;padding:28px 32px;">
+            <div style="display:inline-flex;align-items:center;gap:7px;background:var(--green);border-radius:8px;padding:4px 12px;font-size:.72rem;font-weight:800;color:#fff;margin-bottom:12px;letter-spacing:.3px;">
+              <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M6 9H4a2 2 0 01-2-2V5h4"/><path d="M18 9h2a2 2 0 002-2V5h-4"/><path d="M6 9c0 4 2 7 6 8 4-1 6-4 6-8"/><line x1="9" y1="21" x2="15" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+              Full-time workers
+            </div>
+            <div style="font-size:.92rem;color:var(--text);line-height:1.75;">You don't need to work more hours - just <strong>shift when you work</strong>. Following zone rotation can add ₹1,000–₹2,000 per week without adding a single extra hour. Every Monday you get the plan. You just follow it.</div>
+          </div>
+          <div style="width:1px;background:rgba(46,125,50,0.2);flex-shrink:0;margin:20px 0;"></div>
+          <div style="flex:1;min-width:220px;padding:28px 32px;">
+            <div style="display:inline-flex;align-items:center;gap:7px;background:var(--green2);border-radius:8px;padding:4px 12px;font-size:.72rem;font-weight:800;color:#fff;margin-bottom:12px;letter-spacing:.3px;">
+              <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15.5 15.5"/></svg>
+              Part-time workers
+            </div>
+            <div style="font-size:.92rem;color:var(--text);line-height:1.75;">You have fewer hours to work. Every hour needs to count. SmartWork tells you exactly which hours give you the <strong>most orders per hour</strong> - so you earn your best in whatever time you have.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section style="background:linear-gradient(135deg,#0D2818,#1a3a2a);padding:70px 6%;text-align:center;">
+      <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(67,160,71,0.2);border:1px solid rgba(67,160,71,0.4);border-radius:20px;padding:6px 16px;color:#81C784;font-weight:700;font-size:0.85rem;margin-bottom:20px;">
+        <span style="width:8px;height:8px;border-radius:50%;background:#43A047;display:inline-block;"></span>
+        Included free in every plan
+      </div>
+      <h2 style="font-size:2rem;font-weight:800;color:#fff;margin-bottom:12px;">Start earning more from Monday</h2>
+      <p style="color:rgba(255,255,255,.7);font-size:1rem;margin-bottom:28px;">Sign up today and get your first SmartWork tips this Monday. Free. No extra setup.</p>
+      <button class="btn btn-primary" style="font-size:1.1rem;" onclick="showPub('pub-signup')">Create Free Account &rarr;</button>
+    </section>
+
+    <footer>
+      <div class="footer-top">
+        <div><div class="footer-logo">Insure<span>On</span></div><div class="footer-desc">Money protection for delivery workers. Automatic. Fast. Built for real India.</div></div>
+        <div class="footer-links"><h4>Platform</h4><a href="#" onclick="showPub('pub-how')">How It Works</a><a href="#" onclick="showPub('pub-pricing')">Pricing</a><a href="#" onclick="showPub('pub-signup')">Sign Up</a></div>
+        <div class="footer-links"><h4>Support</h4><a href="#">Call: 1800-XXX-XXXX</a><a href="#">WhatsApp Support</a><a href="#">FAQ</a></div>
+      </div>
+      <div class="footer-bottom">© 2024 InsureOn. IRDAI Registered. All rights reserved.</div>
+    </footer>
+  </div><!-- end pub-smartwork -->
+
+  <!-- ── LOGIN ── -->
+  <div id="pub-login">
+    <div class="auth-wrap">
+      <div class="auth-box fade-up">
+        <div class="auth-logo">Insure<span>On</span></div>
+        <div class="auth-sub">Welcome back. Login to see your cover &amp; payouts.</div>
+        <div class="form-group"><label class="form-label">Mobile number</label><input class="form-input" type="tel" placeholder="Enter your 10-digit mobile number"/></div>
+        <div class="form-group"><label class="form-label">Password</label><input class="form-input" type="password" placeholder="Enter password"/></div>
+        <button class="form-btn" onclick="enterDashboard()">Login &rarr;</button>
+        <div class="auth-switch">Don't have an account? <a onclick="showPub('pub-signup')">Sign up free</a></div>
+        <div class="auth-switch" style="margin-top:8px;"><a href="#">Forgot password?</a></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       SIGN UP — Zone → Tier → Details (3-step flow)
+  ═══════════════════════════════════════════════════════════ -->
+  <div id="pub-signup">
+    <div class="auth-wrap" style="align-items:flex-start;padding:40px 16px;">
+      <div class="auth-box fade-up" style="max-width:600px;">
+        <div class="auth-logo">Insure<span>On</span></div>
+        <div class="auth-sub">Create your free account. Takes 2 minutes.</div>
+
+        <!-- Step indicator -->
+        <div class="step-indicator">
+          <div class="step-dot active" id="sdot-1"></div>
+          <div class="step-dot" id="sdot-2"></div>
+          <div class="step-dot" id="sdot-3"></div>
+        </div>
+
+        <!-- ── STEP 1: Choose Zone ── -->
+        <div class="signup-step active" id="signup-step-1">
+          <div style="font-family:'Open Sans',sans-serif;font-size:1.15rem;font-weight:800;color:var(--navy);margin-bottom:6px;">Step 1 — Select your city zone</div>
+          <div style="font-size:.85rem;color:var(--muted);margin-bottom:18px;">Your zone is set by your city. It affects your weekly premium.</div>
+          <div class="zone-step">
+            <div class="zone-choice" id="zc-A" onclick="selectZone('A')">
+              <div class="zone-choice-icon" style="background:var(--red-light);">🔴</div>
+              <div><div class="zone-choice-name">Zone A — High Risk</div><div class="zone-choice-cities">Chennai · Mumbai · Kolkata</div></div>
+              <div class="zone-choice-risk"><span class="zone-badge-A"><span class="zone-dot" style="background:var(--red2);margin-right:4px;"></span>2.5% rate</span></div>
+            </div>
+            <div class="zone-choice" id="zc-B" onclick="selectZone('B')">
+              <div class="zone-choice-icon" style="background:var(--yellow-light);">🟡</div>
+              <div><div class="zone-choice-name">Zone B — Moderate Risk</div><div class="zone-choice-cities">Bengaluru · Hyderabad · Ahmedabad</div></div>
+              <div class="zone-choice-risk"><span class="zone-badge-B"><span class="zone-dot" style="background:#E65100;margin-right:4px;"></span>1.7% rate</span></div>
+            </div>
+            <div class="zone-choice" id="zc-C" onclick="selectZone('C')">
+              <div class="zone-choice-icon" style="background:var(--green-light);">🟢</div>
+              <div><div class="zone-choice-name">Zone C — Low Risk</div><div class="zone-choice-cities">Delhi · Pune · Jaipur</div></div>
+              <div class="zone-choice-risk"><span class="zone-badge-C"><span class="zone-dot" style="background:var(--green2);margin-right:4px;"></span>1.2% rate</span></div>
+            </div>
+          </div>
+          <button class="form-btn" style="margin-top:20px;" onclick="goStep(2)">Next: Choose Your Tier &rarr;</button>
+          <div class="auth-switch">Already have an account? <a onclick="showPub('pub-login')">Login here</a></div>
+        </div>
+
+        <!-- ── STEP 2: Choose Tier ── -->
+        <div class="signup-step" id="signup-step-2">
+          <!-- FIXED: Back button moved to right corner -->
+          <div class="step-header-row">
+            <div class="step-header-title">Step 2 — Choose your tier</div>
+            <button class="back-btn" onclick="goStep(1)">
+              <svg width="14" height="14" style="fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;" viewBox="0 0 24 24"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+              Back
+            </button>
+          </div>
+          <div id="step2-zone-label" style="margin-bottom:10px;"></div>
+          <div style="font-size:.85rem;color:var(--muted);margin-bottom:18px;">Your tier is based on how many hours you work per week.</div>
+
+          <div class="plan-option" id="po-1" onclick="selectTier('1')">
+            <div class="plan-option-inner">
+              <div class="plan-option-left"><div class="plan-option-title">Tier 1 — Part-time</div><div class="plan-option-sub">10–25 hours per week</div><div style="font-size:.75rem;color:var(--muted);margin-top:4px;">Coverage: up to ₹2,800/week</div></div>
+              <div class="plan-option-right"><div class="plan-option-price" id="po1-price">—</div><div class="plan-option-cover" id="po1-range"></div></div>
+            </div>
+          </div>
+
+          <div class="plan-option" id="po-2" onclick="selectTier('2')" style="position:relative;">
+            <div style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--orange);color:#fff;padding:2px 14px;border-radius:20px;font-size:.72rem;font-weight:800;white-space:nowrap;z-index:1;">Most Popular</div>
+            <div class="plan-option-inner" style="margin-top:8px;">
+              <div class="plan-option-left"><div class="plan-option-title">Tier 2 — Regular</div><div class="plan-option-sub">26–40 hours per week</div><div style="font-size:.75rem;color:var(--muted);margin-top:4px;">Coverage: up to ₹5,150/week</div></div>
+              <div class="plan-option-right"><div class="plan-option-price" id="po2-price">—</div><div class="plan-option-cover" id="po2-range"></div></div>
+            </div>
+          </div>
+
+          <div class="plan-option" id="po-3" onclick="selectTier('3')">
+            <div class="plan-option-inner">
+              <div class="plan-option-left"><div class="plan-option-title">Tier 3 — Full-time</div><div class="plan-option-sub">41+ hours per week</div><div style="font-size:.75rem;color:var(--muted);margin-top:4px;">Coverage: up to ₹8,400/week</div></div>
+              <div class="plan-option-right"><div class="plan-option-price" id="po3-price">—</div><div class="plan-option-cover" id="po3-range"></div></div>
+            </div>
+          </div>
+
+          <div id="plan-summary" style="display:none;background:linear-gradient(135deg,var(--navy),var(--navy3));border-radius:14px;padding:16px 18px;margin:18px 0;">
+            <div style="font-size:.75rem;color:rgba(255,255,255,.55);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Your selected plan</div>
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+              <div><div id="summary-name" style="color:#fff;font-weight:800;font-size:.97rem;"></div><div id="summary-zone" style="color:rgba(255,255,255,.6);font-size:.78rem;margin-top:2px;"></div></div>
+              <div style="text-align:right;"><div id="summary-price" style="color:var(--orange);font-family:'Open Sans',sans-serif;font-size:1.4rem;font-weight:800;"></div><div id="summary-cover" style="color:rgba(255,255,255,.55);font-size:.75rem;margin-top:2px;"></div></div>
+            </div>
+          </div>
+
+          <button class="form-btn" onclick="goStep(3)">Next: Your Details &rarr;</button>
+        </div>
+
+        <!-- ── STEP 3: Personal Details ── -->
+        <div class="signup-step" id="signup-step-3">
+          <!-- FIXED: Back button moved to right corner -->
+          <div class="step-header-row">
+            <div class="step-header-title">Step 3 — Your details</div>
+            <button class="back-btn" onclick="goStep(2)">
+              <svg width="14" height="14" style="fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;" viewBox="0 0 24 24"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+              Back
+            </button>
+          </div>
+
+          <div id="step3-plan-badge" style="background:var(--orange-pale);border:2px solid var(--orange-mid);border-radius:12px;padding:12px 16px;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;">
+            <div><div style="font-size:.75rem;color:var(--orange);font-weight:700;text-transform:uppercase;">Your Plan</div><div id="s3-plan-name" style="font-weight:800;font-size:.95rem;color:var(--navy);margin-top:2px;"></div></div>
+            <div style="text-align:right;"><div id="s3-plan-price" style="font-weight:800;font-size:1.3rem;color:var(--orange);"></div><div id="s3-plan-cover" style="font-size:.72rem;color:var(--muted);">per week</div></div>
+          </div>
+
+          <div class="form-group"><label class="form-label">Your full name</label><input class="form-input" type="text" placeholder="E.g. Akshaya"/></div>
+          <div class="form-group"><label class="form-label">Mobile number</label><input class="form-input" type="tel" placeholder="10-digit mobile number"/></div>
+          <div class="form-group">
+            <label class="form-label">City</label>
+            <select class="form-input" id="signup-city">
+              <option value="">Select your city</option>
+              <optgroup label="Zone A — High Risk"><option>Chennai</option><option>Mumbai</option><option>Kolkata</option><option>Delhi</option></optgroup>
+              <optgroup label="Zone B — Moderate Risk"><option>Bengaluru</option><option>Hyderabad</option><option>Ahmedabad</option><option>Pune</option></optgroup>
+              <optgroup label="Zone C — Low Risk"><option>Jaipur</option></optgroup>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">App you work on</label>
+            <select class="form-input"><option>Select app</option><option>Swiggy</option><option>Zomato</option><option>Blinkit</option><option>Dunzo</option><option>Multiple apps</option></select>
+          </div>
+          <div class="form-group"><label class="form-label">UPI ID (for payouts)</label><input class="form-input" type="text" placeholder="yourname@upi"/></div>
+          <div class="form-group"><label class="form-label">Set a password</label><input class="form-input" type="password" placeholder="Min 6 characters"/></div>
+          <button class="form-btn" onclick="enterDashboard()">Create Account &amp; Get Protected &rarr;</button>
+          <div class="auth-switch">Already have an account? <a onclick="showPub('pub-login')">Login here</a></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div><!-- end #public-site -->
+
+<!-- ══════════════════════════════════════════════════════════
+     DASHBOARD
+═══════════════════════════════════════════════════════════ -->
+<div id="dashboard-site" class="hidden">
+
+  <nav id="dash-nav">
+    <div class="dash-logo">Insure<span>On</span></div>
+    <div class="dash-user">
+      <div class="dash-avatar">A</div>
+      <div>
+        <div class="dash-name">Akshaya</div>
+        <div class="dash-logout" onclick="exitDashboard()">Logout</div>
+      </div>
+    </div>
+  </nav>
+
+  <div id="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Main</div>
+      <div class="sidebar-item active" onclick="showDash('dash-overview')"><div class="si-icon"><svg width="18" height="18" style="fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;"><use href="#ico-home"/></svg></div>Dashboard</div>
+      <div class="sidebar-item" onclick="showDash('dash-claims')"><div class="si-icon"><svg width="18" height="18" style="fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;"><use href="#ico-clipboard"/></svg></div>My Claims</div>
+      <div class="sidebar-item" onclick="showDash('dash-smartwork')"><div class="si-icon"><svg width="18" height="18" style="fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;"><use href="#ico-bulb"/></svg></div>SmartWork Tips</div>
+      <div class="sidebar-item" onclick="showDash('dash-earnings')"><div class="si-icon"><svg width="18" height="18" style="fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;"><use href="#ico-chart"/></svg></div>My Earnings</div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Account</div>
+      <div class="sidebar-item" onclick="showDash('dash-policy')"><div class="si-icon"><svg width="18" height="18" style="fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;"><use href="#ico-shield"/></svg></div>My Plan</div>
+      <div class="sidebar-item" onclick="showDash('dash-notifications')"><div class="si-icon"><svg width="18" height="18" style="fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;"><use href="#ico-bell"/></svg></div>Updates <span style="background:var(--orange);color:#fff;border-radius:10px;padding:1px 7px;font-size:.7rem;margin-left:4px;">3</span></div>
+      <div class="sidebar-item" onclick="showDash('dash-profile')"><div class="si-icon"><svg width="18" height="18" style="fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;"><use href="#ico-user"/></svg></div>My Profile</div>
+      <div class="sidebar-item" onclick="showDash('dash-help')"><div class="si-icon"><svg width="18" height="18" style="fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;"><use href="#ico-chat"/></svg></div>Help &amp; Contact</div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-item" style="color:rgba(255,255,255,0.4);" onclick="exitDashboard()"><div class="si-icon"><svg width="18" height="18" style="fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;"><use href="#ico-logout"/></svg></div>Logout</div>
+    </div>
+  </div>
+
+  <div id="dash-body">
+
+    <!-- OVERVIEW -->
+    <div class="dash-page active" id="dash-overview">
+      <div class="hero-banner">
+        <div class="hb-left">
+          <div class="hb-greet">Good morning</div>
+          <div class="hb-name">Akshaya</div>
+          <div class="hb-status"><div class="hb-dot"></div>Your cover is ON - Active</div>
+        </div>
+        <div class="hb-right">
+          <div class="hb-box"><div class="hb-val">₹2,800</div><div class="hb-lbl">Max payout</div></div>
+          <div class="hb-box"><div class="hb-val">₹120</div><div class="hb-lbl">Per week</div></div>
+        </div>
+      </div>
+
+      <div class="alert-bar orange">
+        <div class="ab-icon"><svg width="28" height="28" style="color:#FB8C00;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;"><use href="#ico-warning"/></svg></div>
+        <div class="ab-text"><div class="ab-title">Alert active - Chennai</div><div class="ab-sub">Serious weather expected today and tomorrow. <strong>We are already watching your earnings.</strong> No action needed from you.</div></div>
+      </div>
+
+      <div class="claim-tracker">
+        <div class="ct-label">Active Claim - Watching now</div>
+        <div class="ct-title">Heavy Rain - October 2024</div>
+        <div class="day-dots">
+          <div class="day-dot loss"><div class="dd-ico"><svg width="16" height="16" style="fill:none;stroke:#fff;stroke-width:2.5;stroke-linecap:round;"><use href="#ico-x"/></svg></div>Day 1</div>
+          <div class="day-dot loss"><div class="dd-ico"><svg width="16" height="16" style="fill:none;stroke:#fff;stroke-width:2.5;stroke-linecap:round;"><use href="#ico-x"/></svg></div>Day 2</div>
+          <div class="day-dot loss"><div class="dd-ico"><svg width="16" height="16" style="fill:none;stroke:#fff;stroke-width:2.5;stroke-linecap:round;"><use href="#ico-x"/></svg></div>Day 3</div>
+          <div class="day-dot wait"><div class="dd-ico"><svg width="16" height="16" style="fill:none;stroke:var(--muted);stroke-width:1.8;stroke-linecap:round;"><use href="#ico-clock"/></svg></div>Day 4</div>
+          <div class="day-dot wait"><div class="dd-ico"><svg width="16" height="16" style="fill:none;stroke:var(--muted);stroke-width:1.8;stroke-linecap:round;"><use href="#ico-clock"/></svg></div>Day 5</div>
+        </div>
+        <div class="ct-note">3 low-money days confirmed. <strong>2 more days needed.</strong> If Day 4 and Day 5 are also low - <strong>₹1,960 will be sent to your UPI automatically.</strong></div>
+      </div>
+
+      <div class="grid-4" style="margin-bottom:24px;">
+        <div class="stat-card"><div class="stat-icon"><svg width="28" height="28" style="color:var(--blue2);fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;"><use href="#ico-calendar"/></svg></div><div class="stat-val">6</div><div class="stat-lbl">Weeks covered</div></div>
+        <div class="stat-card"><div class="stat-icon"><svg width="28" height="28" style="color:var(--orange);fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;"><use href="#ico-money"/></svg></div><div class="stat-val" style="color:var(--orange);">₹1,960</div><div class="stat-lbl">Payout on the way</div></div>
+        <div class="stat-card"><div class="stat-icon"><svg width="28" height="28" style="color:var(--navy);fill:currentColor;"><use href="#ico-chart"/></svg></div><div class="stat-val">₹1,000</div><div class="stat-lbl">Your daily average</div></div>
+        <div class="stat-card"><div class="stat-icon"><svg width="28" height="28" style="color:var(--green2);fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;"><use href="#ico-trophy"/></svg></div><div class="stat-val" style="color:var(--green);">₹4,760</div><div class="stat-lbl">Total paid to you</div></div>
+      </div>
+
+      <div class="premium-bar">
+        <div class="pb-left">
+          <div class="pb-label">Payment due Monday</div>
+          <div class="pb-amt">₹120</div>
+          <div class="pb-sub">Auto-pay is ON · UPI · akshaya@upi</div>
+        </div>
+        <button class="pb-btn">Pay Now</button>
+      </div>
+
+      <div style="font-family:'Open Sans',sans-serif;font-size:1.1rem;font-weight:800;color:var(--navy);margin:8px 0 14px;">This Week's SmartWork Tips</div>
+      <div class="tip-card green"><div class="tc-icon" style="background:var(--green-light);"><svg width="20" height="20" style="color:var(--green2);fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;"><use href="#ico-moon"/></svg></div><div><div class="tc-title">Best time: 7–9 PM evenings</div><div class="tc-body">Dinner orders every weeknight - most orders, best pay per hour.</div></div></div>
+      <div class="tip-card red" style="margin-top:10px;"><div class="tc-icon" style="background:var(--red-light);"><svg width="20" height="20" style="color:var(--red2);fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;"><use href="#ico-danger"/></svg></div><div><div class="tc-title">Avoid Wednesday - City alert active</div><div class="tc-body">Stay home. Your cover is watching. Don't risk going out.</div></div></div>
+      <div class="tip-card orange" style="margin-top:10px;cursor:pointer;" onclick="showDash('dash-smartwork')"><div class="tc-icon" style="background:var(--orange-pale);"><svg width="20" height="20" style="color:var(--orange);fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;"><use href="#ico-arrow-right"/></svg></div><div><div class="tc-title">See all tips for this week</div><div class="tc-body">Busy zones, safe hours, full earnings plan.</div></div></div>
+    </div>
+
+    <!-- CLAIMS -->
+    <div class="dash-page" id="dash-claims">
+      <div class="claims-header">
+        <div><div class="page-title">My Claims</div><div class="page-sub" style="margin-bottom:0;">We open and handle all claims on our own. You never need to do anything.</div></div>
+        <div class="how-claims-dropdown">
+          <button class="how-claims-btn" id="howClaimsBtn" onclick="toggleHowClaims()">
+            <svg width="16" height="16" style="fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;"><use href="#ico-info"/></svg>
+            How Claims Work
+            <svg width="14" height="14" id="howClaimsChevron" style="fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round;transition:.3s;"><use href="#ico-chevron-down"/></svg>
+          </button>
+          <div class="how-claims-panel" id="howClaimsPanel">
+            <div class="hcp-header"><div class="hcp-header-title">How Claims Work - 3 Steps</div><div class="hcp-header-sub">Everything is automatic. You never need to do anything.</div></div>
+            <div class="hcp-body">
+              <div class="hcp-step"><div class="hcp-num">1</div><div class="hcp-content"><div class="hcp-title">A problem hits your city</div><div class="hcp-body">The government sends an alert. We see it within 15 minutes and open your claim right away.</div></div></div>
+              <div class="hcp-step"><div class="hcp-num">2</div><div class="hcp-content"><div class="hcp-title">We check your earnings every day</div><div class="hcp-body">We check your earnings every night. If below 50% of normal for 5 consecutive days - you qualify.</div></div></div>
+              <div class="hcp-step" style="margin-bottom:0;"><div class="hcp-num">3</div><div class="hcp-content"><div class="hcp-title">Money goes to your UPI</div><div class="hcp-body">No form. No call. No office. Money reaches your UPI within 48–72 hours.</div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="claim-tracker">
+        <div class="ct-label">Claim #2024-OCT-012</div>
+        <div class="ct-title">Heavy Rain - Chennai, October 2024</div>
+        <div class="day-dots">
+          <div class="day-dot loss"><div class="dd-ico"><svg width="16" height="16" style="fill:none;stroke:#fff;stroke-width:2.5;stroke-linecap:round;"><use href="#ico-x"/></svg></div>Day 1</div>
+          <div class="day-dot loss"><div class="dd-ico"><svg width="16" height="16" style="fill:none;stroke:#fff;stroke-width:2.5;stroke-linecap:round;"><use href="#ico-x"/></svg></div>Day 2</div>
+          <div class="day-dot loss"><div class="dd-ico"><svg width="16" height="16" style="fill:none;stroke:#fff;stroke-width:2.5;stroke-linecap:round;"><use href="#ico-x"/></svg></div>Day 3</div>
+          <div class="day-dot wait"><div class="dd-ico"><svg width="16" height="16" style="fill:none;stroke:var(--muted);stroke-width:1.8;stroke-linecap:round;"><use href="#ico-clock"/></svg></div>Day 4</div>
+          <div class="day-dot wait"><div class="dd-ico"><svg width="16" height="16" style="fill:none;stroke:var(--muted);stroke-width:1.8;stroke-linecap:round;"><use href="#ico-clock"/></svg></div>Day 5</div>
+        </div>
+        <div class="ct-note">3 low-money days confirmed. <strong>2 more days needed.</strong> If both qualify - <strong>₹1,960 sent to akshaya@upi on Day 5.</strong></div>
+      </div>
+
+      <div style="font-family:'Open Sans',sans-serif;font-size:1.1rem;font-weight:800;color:var(--navy);margin:20px 0 14px;">How much will you get?</div>
+      <div class="card" style="margin-bottom:24px;">
+        <div class="payout-row"><div class="p-days">1–4 days</div><div class="p-track"><div style="width:100%;height:100%;border-radius:8px;background:#F0F4F8;display:flex;align-items:center;padding:0 12px;"><span style="font-size:.78rem;color:var(--muted);font-weight:700;">No payout yet</span></div></div></div>
+        <div class="payout-row"><div class="p-days">5 days</div><div class="p-track"><div class="p-fill" style="width:70%;background:var(--orange);"><span>₹1,960 (70%)</span></div></div></div>
+        <div class="payout-row"><div class="p-days">6 days</div><div class="p-track"><div class="p-fill" style="width:85%;background:var(--blue2);"><span>₹2,380 (85%)</span></div></div></div>
+        <div class="payout-row"><div class="p-days">7 days</div><div class="p-track"><div class="p-fill" style="width:100%;background:var(--green2);"><span>₹2,800 - Full</span></div></div></div>
+      </div>
+
+      <div style="font-family:'Open Sans',sans-serif;font-size:1.1rem;font-weight:800;color:var(--navy);margin-bottom:14px;">Past Claims</div>
+      <div class="past-claim"><div class="pc-ico"><svg width="24" height="24" style="color:var(--blue2);fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;"><use href="#ico-flood"/></svg></div><div><div class="pc-title">Heavy Rain - August 2024</div><div class="pc-sub">7 days · UPI transfer · akshaya@upi</div></div><div class="pc-right"><div class="pc-amt">₹2,800</div><div class="pc-tag">Paid</div></div></div>
+      <div class="past-claim"><div class="pc-ico"><svg width="24" height="24" style="color:var(--blue2);fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;"><use href="#ico-cyclone"/></svg></div><div><div class="pc-title">Cyclone - May 2024</div><div class="pc-sub">5 days · UPI transfer · akshaya@upi</div></div><div class="pc-right"><div class="pc-amt">₹1,960</div><div class="pc-tag">Paid</div></div></div>
+    </div>
+
+    <!-- SMARTWORK -->
+    <div class="dash-page" id="dash-smartwork">
+      <div class="page-title">SmartWork Tips</div>
+      <div class="page-sub">Your personal tips to earn more this week - sent every Monday</div>
+      <div class="surge-map">
+        <div style="font-family:'Open Sans',sans-serif;font-size:1rem;font-weight:800;display:flex;align-items:center;gap:8px;"><svg width="18" height="18" style="color:#FF7043;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;"><use href="#ico-map"/></svg>Busy zones right now - Chennai</div>
+        <div style="font-size:.82rem;opacity:.65;margin:4px 0 12px;">Updated daily · Based on real order data</div>
+        <div class="surge-grid">
+          <div class="surge-pill"><div class="surge-dot" style="background:#FF5722;"></div>T. Nagar - Very busy</div>
+          <div class="surge-pill"><div class="surge-dot" style="background:#FF5722;"></div>Anna Nagar - Busy</div>
+          <div class="surge-pill"><div class="surge-dot" style="background:#FFD166;"></div>Velachery - Picking up</div>
+          <div class="surge-pill"><div class="surge-dot" style="background:#FFD166;"></div>Adyar - Okay</div>
+          <div class="surge-pill"><div class="surge-dot" style="background:#888;"></div>Tambaram - Slow</div>
+        </div>
+      </div>
+      
+      <div style="font-family:'Open Sans',sans-serif;font-size:1.1rem;font-weight:800;color:var(--navy);margin-bottom:14px;">Expected earnings this week</div>
+      <div class="card" style="margin-bottom:20px;">
+        <div class="earn-row"><div class="earn-day">Mon</div><div class="earn-track"><div class="earn-bar" style="width:90%;background:var(--green2);"><span>₹900</span></div></div><div class="earn-amt" style="color:var(--green2);">₹900</div></div>
+        <div class="earn-row"><div class="earn-day">Tue</div><div class="earn-track"><div class="earn-bar" style="width:75%;background:var(--green2);"><span>₹750</span></div></div><div class="earn-amt" style="color:var(--green2);">₹750</div></div>
+        <div class="earn-row"><div class="earn-day">Wed</div><div class="earn-track"><div class="earn-bar" style="width:30%;background:var(--red2);"><span>₹300</span></div></div><div class="earn-amt" style="color:var(--red2);">₹300</div></div>
+        <div class="earn-row"><div class="earn-day">Thu</div><div class="earn-track"><div class="earn-bar" style="width:40%;background:var(--yellow);"><span>₹400</span></div></div><div class="earn-amt" style="color:var(--yellow);">₹400</div></div>
+        <div class="earn-row"><div class="earn-day">Fri</div><div class="earn-track"><div class="earn-bar" style="width:95%;background:var(--green2);"><span>₹950</span></div></div><div class="earn-amt" style="color:var(--green2);">₹950</div></div>
+        <div class="earn-row"><div class="earn-day">Sat</div><div class="earn-track"><div class="earn-bar" style="width:100%;background:var(--navy2);"><span>₹1,200</span></div></div><div class="earn-amt" style="color:var(--navy2);">₹1,200</div></div>
+        <div class="earn-row"><div class="earn-day">Sun</div><div class="earn-track"><div class="earn-bar" style="width:100%;background:var(--navy2);"><span>₹1,200</span></div></div><div class="earn-amt" style="color:var(--navy2);">₹1,200</div></div>
+      </div>
+      <div style="font-family:'Open Sans',sans-serif;font-size:1.1rem;font-weight:800;color:var(--navy);margin-bottom:14px;">Best times to work this week</div>
+      <div class="tip-card green"><div class="tc-icon" style="background:var(--green-light);"><svg width="20" height="20" style="color:var(--green2);fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;"><use href="#ico-moon"/></svg></div><div><div class="tc-title">7–9 PM weeknights - Most orders</div><div class="tc-body">Dinner rush every day. Most orders per hour. Best money of the day.</div></div></div>
+      <div class="tip-card green" style="margin-top:10px;"><div class="tc-icon" style="background:var(--green-light);"><svg width="20" height="20" style="color:var(--green2);fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;"><use href="#ico-food"/></svg></div><div><div class="tc-title">Saturday 12–2 PM - Lunch rush</div><div class="tc-body">Weekend lunch is big. Lots of orders in T. Nagar.</div></div></div>
+      <div class="tip-card red" style="margin-top:10px;"><div class="tc-icon" style="background:var(--red-light);"><svg width="20" height="20" style="color:var(--red2);fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;"><use href="#ico-rain"/></svg></div><div><div class="tc-title">Stay home Wednesday - Alert in city</div><div class="tc-body">A government alert is active. Your cover is watching your earnings - no need to risk going out.</div></div></div>
+      <div class="grid-2" style="margin-top:20px;">
+        <div class="stat-card"><div class="stat-icon"><svg width="28" height="28" style="color:var(--green2);fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;"><use href="#ico-trending"/></svg></div><div class="stat-val">+15%</div><div class="stat-lbl">Extra money if you follow tips</div></div>
+        <div class="stat-card"><div class="stat-icon"><svg width="28" height="28" style="color:var(--blue2);fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;"><use href="#ico-shield"/></svg></div><div class="stat-val">−5%</div><div class="stat-lbl">Lower weekly charge for safe habits</div></div>
+      </div>
+    </div>
+
+    <!-- EARNINGS -->
+    <div class="dash-page" id="dash-earnings">
+      <div class="page-title">My Earnings</div>
+      <div class="page-sub">Your daily money history - used to work out your insurance starting point</div>
+
+      <div class="grid-4" style="margin-bottom:24px;">
+        <div class="stat-card">
+          <div class="stat-icon"><svg width="28" height="28" style="color:var(--blue2);fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;"><use href="#ico-calendar"/></svg></div>
+          <div class="stat-val">₹1,000</div><div class="stat-lbl">Your daily average</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon"><svg width="28" height="28" style="color:var(--orange);fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;"><use href="#ico-money"/></svg></div>
+          <div class="stat-val">₹7,000</div><div class="stat-lbl">This week so far</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon"><svg width="28" height="28" style="color:var(--green2);fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;"><use href="#ico-trending"/></svg></div>
+          <div class="stat-val">24,000</div><div class="stat-lbl">This month (₹)</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon"><svg width="28" height="28" style="color:var(--navy);fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;"><use href="#ico-clock"/></svg></div>
+          <div class="stat-val">22 hrs</div><div class="stat-lbl">Avg hours/week</div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:20px;">
+        <div class="card-title">This week's earnings vs your normal</div>
+        <div style="font-size:.82rem;color:var(--muted);margin-bottom:16px;">The cutoff (₹500) is half your daily average. If your earnings go below this for 5 days - your payout starts.</div>
+        <div class="earn-row"><div class="earn-day">Mon</div><div class="earn-track"><div class="earn-bar" style="width:85%;background:var(--green2);"><span>₹850</span></div></div><div class="earn-amt" style="color:var(--green2);">₹850</div></div>
+        <div class="earn-row"><div class="earn-day">Tue</div><div class="earn-track"><div class="earn-bar" style="width:95%;background:var(--green2);"><span>₹950</span></div></div><div class="earn-amt" style="color:var(--green2);">₹950</div></div>
+        <div class="earn-row"><div class="earn-day">Wed</div><div class="earn-track"><div class="earn-bar" style="width:22%;background:var(--red2);"><span>₹220</span></div></div><div class="earn-amt" style="color:var(--red2);">₹220 -</div></div>
+        <div class="earn-row"><div class="earn-day">Thu</div><div class="earn-track"><div class="earn-bar" style="width:18%;background:var(--red2);"><span>₹180</span></div></div><div class="earn-amt" style="color:var(--red2);">₹180 -</div></div>
+        <div class="earn-row"><div class="earn-day">Fri</div><div class="earn-track"><div class="earn-bar" style="width:25%;background:var(--red2);"><span>₹250</span></div></div><div class="earn-amt" style="color:var(--red2);">₹250 -</div></div>
+        <div style="font-size:.8rem;color:var(--orange);font-weight:700;margin-top:12px;display:flex;align-items:center;gap:6px;">
+          <svg width="16" height="16" style="color:var(--orange);fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;flex-shrink:0;"><use href="#ico-warning"/></svg>
+          3 low days spotted. Claim is open and watching.
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">How your daily average is worked out</div>
+        <div class="info-row"><div class="ir-label">Total earnings last 4 weeks</div><div class="ir-val">₹24,000</div></div>
+        <div class="info-row"><div class="ir-label">Days you worked in last 4 weeks</div><div class="ir-val">24 days</div></div>
+        <div class="info-row"><div class="ir-label">Your daily average</div><div class="ir-val" style="color:var(--blue);font-size:1.05rem;">₹1,000/day</div></div>
+        <div class="info-row"><div class="ir-label">Half of that (your cutoff)</div><div class="ir-val" style="color:var(--orange);">₹500/day</div></div>
+        <div style="background:var(--blue-light);border-radius:10px;padding:12px 14px;margin-top:12px;font-size:.83rem;color:var(--blue);line-height:1.6;">
+          Any day you earn <strong>below ₹500</strong> during a problem counts as a lost day. 5 lost days in a row = money sent to your UPI.
+        </div>
+      </div>
+    </div>
+
+    <!-- POLICY -->
+    <div class="dash-page" id="dash-policy">
+      <div class="page-title">My Plan</div>
+      <div class="page-sub">Everything about your cover in one place</div>
+
+      <div class="policy-hero">
+        <div class="ph-label">Active Weekly Cover</div>
+        <div style="font-family:'Open Sans',sans-serif;font-size:1.3rem;font-weight:800;margin-bottom:8px;">You Are Protected</div>
+        <div class="ph-amount">₹2,800</div>
+        <div class="ph-sub">Most you can get per bad week</div>
+      </div>
+
+      <div class="premium-bar" style="margin-bottom:24px;">
+        <div class="pb-left">
+          <div class="pb-label">Next payment due Monday</div>
+          <div class="pb-amt">₹120 / week</div>
+          <div class="pb-sub">Auto-pay ON &bull; akshaya@upi</div>
+        </div>
+        <button class="pb-btn">Pay Now</button>
+      </div>
+
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-title">Plan Details</div>
+        <div class="info-row"><div class="ir-label">Plan number</div><div class="ir-val">#IO-2024-9841</div></div>
+        <div class="info-row"><div class="ir-label">Name</div><div class="ir-val">Akshaya</div></div>
+        <div class="info-row"><div class="ir-label">City</div><div class="ir-val">Chennai</div></div>
+        <div class="info-row"><div class="ir-label">Risk Zone</div><div class="ir-val"><span class="tag tag-red">Zone A - High Risk</span></div></div>
+        <div class="info-row"><div class="ir-label">Tier</div><div class="ir-val"><span class="tag tag-orange">Tier 1 - Part-time</span></div></div>
+        <div class="info-row"><div class="ir-label">Weekly hours</div><div class="ir-val">21–25 hrs/week</div></div>
+        <div class="info-row"><div class="ir-label">Plan status</div><div class="ir-val"><span class="tag tag-green">Active</span></div></div>
+        <div class="info-row"><div class="ir-label">UPI ID</div><div class="ir-val">akshaya@upi</div></div>
+      </div>
+
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-title">What is covered</div>
+        <div class="info-row">
+          <div class="ir-label" style="display:flex;align-items:center;gap:8px;">
+            <svg width="16" height="16" style="color:var(--blue2);fill:none;stroke:currentColor;stroke-width:1.8;flex-shrink:0;stroke-linecap:round;"><use href="#ico-flood"/></svg> Heavy rain &amp; Floods
+          </div>
+          <div class="ir-val"><span class="tag tag-green">Covered</span></div>
+        </div>
+        <div class="info-row">
+          <div class="ir-label" style="display:flex;align-items:center;gap:8px;">
+            <svg width="16" height="16" style="color:var(--blue2);fill:none;stroke:currentColor;stroke-width:1.8;flex-shrink:0;stroke-linecap:round;"><use href="#ico-cyclone"/></svg> Storms &amp; Cyclones
+          </div>
+          <div class="ir-val"><span class="tag tag-green">Covered</span></div>
+        </div>
+        <div class="info-row">
+          <div class="ir-label" style="display:flex;align-items:center;gap:8px;">
+            <svg width="16" height="16" style="color:var(--navy);fill:none;stroke:currentColor;stroke-width:1.8;flex-shrink:0;stroke-linecap:round;"><use href="#ico-danger"/></svg> Lockdowns &amp; Curfews
+          </div>
+          <div class="ir-val"><span class="tag tag-green">Covered</span></div>
+        </div>
+        <div class="info-row">
+          <div class="ir-label" style="display:flex;align-items:center;gap:8px;">
+            <svg width="16" height="16" style="color:var(--yellow);fill:none;stroke:currentColor;stroke-width:1.8;flex-shrink:0;stroke-linecap:round;"><use href="#ico-warning"/></svg> Earthquakes &amp; Disasters
+          </div>
+          <div class="ir-val"><span class="tag tag-green">Covered</span></div>
+        </div>
+        <div class="info-row">
+          <div class="ir-label" style="display:flex;align-items:center;gap:8px;">
+            <svg width="16" height="16" style="color:var(--muted);fill:none;stroke:currentColor;stroke-width:1.8;flex-shrink:0;stroke-linecap:round;"><use href="#ico-help"/></svg> App shutdowns
+          </div>
+          <div class="ir-val"><span class="tag tag-blue">Optional add-on</span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Weekly charge breakdown</div>
+        <div class="info-row"><div class="ir-label">Starting charge (Zone A, Tier 1)</div><div class="ir-val">₹100/week</div></div>
+        <div class="info-row"><div class="ir-label">Extra for high risk Zone</div><div class="ir-val">+₹20</div></div>
+        <div class="info-row"><div class="ir-label">Your final weekly charge</div><div class="ir-val" style="color:var(--orange);font-size:1.1rem;">₹120/week</div></div>
+        <div style="background:var(--green-light);border-radius:10px;padding:12px;margin-top:12px;font-size:.83rem;color:var(--green);font-weight:700;display:flex;align-items:center;gap:8px;">
+          <svg width="16" height="16" style="color:var(--green2);fill:none;stroke:currentColor;stroke-width:1.8;flex-shrink:0;stroke-linecap:round;"><use href="#ico-bulb"/></svg>
+          Tip: Follow SmartWork tips and stay home during alerts - your weekly charge could drop by 5%.
+        </div>
+      </div>
+    </div>
+
+    <!-- ── NOTIFICATIONS ── -->
+    <div class="dash-page" id="dash-notifications">
+      <div class="page-title">Updates</div>
+      <div class="page-sub">Important news about your cover and payouts</div>
+
+      <div class="notif-item">
+        <div class="notif-dot"></div>
+        <div>
+          <div class="notif-title">Alert - Chennai</div>
+          <div class="notif-body">A serious weather alert has been issued for your city. Your claim has been opened automatically. We are watching your earnings.</div>
+          <div class="notif-time">Today, 6:45 AM</div>
+        </div>
+      </div>
+      <div class="notif-item">
+        <div class="notif-dot"></div>
+        <div>
+          <div class="notif-title">Day 3 earnings checked - Low money spotted</div>
+          <div class="notif-body">Your earnings today (₹250) were below ₹500 (your cutoff). Day 3 of low earnings confirmed. 2 more days needed for payout.</div>
+          <div class="notif-time">Yesterday, 11:59 PM</div>
+        </div>
+      </div>
+      <div class="notif-item">
+        <div class="notif-dot"></div>
+        <div>
+          <div class="notif-title">SmartWork tips for this week are ready</div>
+          <div class="notif-body">Your tips for this week are ready. Best time: 7–9 PM evenings. Avoid Wednesday - city alert is active.</div>
+          <div class="notif-time">Mon, 8:00 AM</div>
+        </div>
+      </div>
+      <div class="notif-item">
+        <div class="notif-dot read"></div>
+        <div>
+          <div class="notif-title">Weekly payment done - ₹120</div>
+          <div class="notif-body">Your weekly charge of ₹120 was taken from akshaya@upi. Your cover continues until next Monday.</div>
+          <div class="notif-time">Mon, 12:01 AM</div>
+        </div>
+      </div>
+      <div class="notif-item">
+        <div class="notif-dot read"></div>
+        <div>
+          <div class="notif-title">Payout sent - ₹2,800</div>
+          <div class="notif-body">Your payout for August (7 days) has been sent to akshaya@upi. Transaction ID: TXN8847261. Should arrive within 30 minutes.</div>
+          <div class="notif-time">Sep 3, 2:14 AM</div>
+        </div>
+      </div>
+      <div class="notif-item">
+        <div class="notif-dot read"></div>
+        <div>
+          <div class="notif-title">City alert lifted - Chennai</div>
+          <div class="notif-body">The alert for Chennai has ended. Roads are opening. You can go back to work safely.</div>
+          <div class="notif-time">Aug 30, 9:00 AM</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PROFILE ── -->
+    <div class="dash-page" id="dash-profile">
+      <div class="page-title">My Profile</div>
+      <div class="page-sub">Your details and account settings</div>
+
+      <div class="card" style="text-align:center;margin-bottom:20px;padding:36px;">
+        <div class="profile-avatar" style="margin:0 auto;">A</div>
+        <div style="font-family:'Open Sans',sans-serif;font-size:1.4rem;font-weight:800;">Akshaya</div>
+        <div style="font-size:.88rem;color:var(--muted);margin-top:4px;">Swiggy rider &bull; Chennai &bull; Member since Jan 2024</div>
+        <div style="margin-top:12px;"><span class="tag tag-orange">Zone A</span> &nbsp; <span class="tag tag-green">Tier 1 - Part-time</span></div>
+      </div>
+
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-title">Personal Details</div>
+        <div class="info-row"><div class="ir-label">Full name</div><div class="ir-val">Akshaya</div></div>
+        <div class="info-row"><div class="ir-label">Mobile</div><div class="ir-val">+91 98XXX XXXXX</div></div>
+        <div class="info-row"><div class="ir-label">City</div><div class="ir-val">Chennai, Tamil Nadu</div></div>
+        <div class="info-row"><div class="ir-label">UPI ID</div><div class="ir-val">akshaya@upi</div></div>
+        <div class="info-row"><div class="ir-label">App</div><div class="ir-val">Swiggy</div></div>
+        <div class="info-row"><div class="ir-label">Aadhaar checked</div><div class="ir-val"><span class="tag tag-green">Done</span></div></div>
+      </div>
+
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-title">Risk Score</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+          <div>
+            <div style="font-family:'Open Sans',sans-serif;font-size:2rem;font-weight:800;color:var(--orange);">2.10</div>
+            <div style="font-size:.82rem;color:var(--muted);">Your personal risk number</div>
+          </div>
+          <span class="tag" style="background:#FFF4E0;color:#E65100;font-size:.88rem;padding:8px 16px;">Higher Risk</span>
+        </div>
+        <div class="info-row"><div class="ir-label">Zone (Zone A, 30%)</div><div class="ir-val">High → 3 pts</div></div>
+        <div class="info-row"><div class="ir-label">Pincode problem history (25%)</div><div class="ir-val">High → 3 pts</div></div>
+        <div class="info-row"><div class="ir-label">Work hours (20%)</div><div class="ir-val">Low → 1 pt</div></div>
+        <div class="info-row"><div class="ir-label">When you work (15%)</div><div class="ir-val">Afternoon → 1 pt</div></div>
+        <div class="info-row"><div class="ir-label">Past claims (10%)</div><div class="ir-val">0 claims → 1 pt</div></div>
+        <div style="background:var(--blue-light);border-radius:10px;padding:12px;margin-top:12px;font-size:.83rem;color:var(--blue);display:flex;align-items:center;gap:8px;">
+          <svg width="16" height="16" style="color:var(--blue2);fill:none;stroke:currentColor;stroke-width:1.8;flex-shrink:0;stroke-linecap:round;"><use href="#ico-info"/></svg>
+          Work in afternoon slots instead of night to bring your risk number down and pay less each week.
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Settings</div>
+        <div class="info-row">
+          <div class="ir-label" style="display:flex;align-items:center;gap:8px;">
+            <svg width="15" height="15" style="color:var(--muted);fill:none;stroke:currentColor;stroke-width:1.8;flex-shrink:0;stroke-linecap:round;"><use href="#ico-autopay"/></svg>
+            Auto-pay weekly charge
+          </div>
+          <div class="ir-val"><span class="tag tag-green">ON</span></div>
+        </div>
+        <div class="info-row">
+          <div class="ir-label" style="display:flex;align-items:center;gap:8px;">
+            <svg width="15" height="15" style="color:var(--muted);fill:none;stroke:currentColor;stroke-width:1.8;flex-shrink:0;stroke-linecap:round;"><use href="#ico-sms"/></svg>
+            SMS alerts
+          </div>
+          <div class="ir-val"><span class="tag tag-green">ON</span></div>
+        </div>
+        <div class="info-row">
+          <div class="ir-label" style="display:flex;align-items:center;gap:8px;">
+            <svg width="15" height="15" style="color:var(--muted);fill:none;stroke:currentColor;stroke-width:1.8;flex-shrink:0;stroke-linecap:round;"><use href="#ico-bulb"/></svg>
+            SmartWork tips
+          </div>
+          <div class="ir-val"><span class="tag tag-green">ON</span></div>
+        </div>
+        <div class="info-row">
+          <div class="ir-label" style="display:flex;align-items:center;gap:8px;">
+            <svg width="15" height="15" style="color:var(--muted);fill:none;stroke:currentColor;stroke-width:1.8;flex-shrink:0;stroke-linecap:round;"><use href="#ico-globe"/></svg>
+            Language
+          </div>
+          <div class="ir-val">English</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HELP -->
+    <div class="dash-page" id="dash-help">
+      <div class="page-title">Help &amp; Contact</div>
+      <div class="page-sub">We are here to help. Choose how you want to reach us.</div>
+      <div class="contact-grid">
+        <div class="contact-card"><div class="cc-icon"><svg width="26" height="26" style="color:var(--orange);fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;"><use href="#ico-phone"/></svg></div><div class="cc-title">Call Us</div><div class="cc-sub">Free helpline. Open 8 AM to 8 PM, 7 days. Hindi, Tamil, Telugu, Kannada.</div><a class="cc-action filled" href="tel:1800000000">Call 1800-XXX-XXXX</a></div>
+        <div class="contact-card"><div class="cc-icon"><svg width="26" height="26" style="color:var(--orange);fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;"><use href="#ico-message"/></svg></div><div class="cc-title">WhatsApp</div><div class="cc-sub">Message us on WhatsApp anytime. We write back within 30 minutes.</div><a class="cc-action filled" href="#">Open WhatsApp</a></div>
+        <div class="contact-card"><div class="cc-icon" style="background:var(--blue-light);"><svg width="26" height="26" style="color:var(--blue2);fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;"><use href="#ico-video"/></svg></div><div class="cc-title">Watch a Guide</div><div class="cc-sub">Watch a 3-minute video that shows how InsureOn works - in simple Hindi.</div><a class="cc-action">Watch Video</a></div>
+        <div class="contact-card"><div class="cc-icon" style="background:var(--green-light);"><svg width="26" height="26" style="color:var(--green2);fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;"><use href="#ico-help"/></svg></div><div class="cc-title">Common Questions</div><div class="cc-sub">Quick answers to the most common questions from delivery workers like you.</div><a class="cc-action">See FAQ</a></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Quick answers</div>
+        <div class="faq-item" style="box-shadow:none;margin-bottom:0;"><div class="faq-q" onclick="toggleFaq(this)">Why hasn't my money arrived yet?</div><div class="faq-a">Money is sent within 48–72 hours after you qualify. If it has been longer, please call our helpline.</div></div>
+        <div class="faq-item" style="box-shadow:none;margin-bottom:0;"><div class="faq-q" onclick="toggleFaq(this)">Can I change my UPI ID?</div><div class="faq-a">Yes. Go to My Profile and update your UPI ID. The change takes effect from next week.</div></div>
+        <div class="faq-item" style="box-shadow:none;margin-bottom:0;"><div class="faq-q" onclick="toggleFaq(this)">I worked on multiple apps this week - does it count?</div><div class="faq-a">Yes. We add up your earnings from all connected apps to work out your total daily money.</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     PLAN OPTIONS STYLES
+═══════════════════════════════════════════════════════════ -->
+<style>
+.plan-option{cursor:pointer;display:block;margin-bottom:10px;}
+.plan-option-inner{display:flex;align-items:center;justify-content:space-between;gap:12px;border:2px solid var(--border);border-radius:14px;padding:14px 16px;background:#fff;transition:.2s;}
+.plan-option:hover .plan-option-inner{border-color:var(--orange);background:var(--orange-pale);}
+.plan-option.selected .plan-option-inner{border-color:var(--orange);background:var(--orange-pale);box-shadow:0 0 0 3px rgba(255,87,34,.12);}
+.plan-option-title{font-weight:800;font-size:.92rem;color:var(--navy);}
+.plan-option-sub{font-size:.78rem;color:var(--muted);margin-top:2px;}
+.plan-option-price{font-family:'Open Sans',sans-serif;font-size:1.15rem;font-weight:800;color:var(--orange);text-align:right;}
+.plan-option-price span{font-size:.75rem;font-weight:600;color:var(--muted);}
+.plan-option-cover{font-size:.72rem;color:var(--muted);text-align:right;margin-top:2px;}
+.zone-tab{text-align:left;min-width:200px;}
+</style>
+
+<script>
+/* ── Public navigation ── */
+function showPub(id) {
+  document.querySelectorAll('#public-site > div[id^="pub-"]').forEach(el => el.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+/* ── Dashboard ── */
+function enterDashboard() {
+  document.getElementById('public-site').classList.add('hidden');
+  document.getElementById('dashboard-site').classList.remove('hidden');
+  showDash('dash-overview');
+  window.scrollTo(0, 0);
+}
+function exitDashboard() {
+  document.getElementById('dashboard-site').classList.add('hidden');
+  document.getElementById('public-site').classList.remove('hidden');
+  showPub('pub-home');
+  window.scrollTo(0, 0);
+}
+function showDash(id) {
+  document.querySelectorAll('.dash-page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.sidebar-item').forEach(s => s.classList.remove('active'));
+  const page = document.getElementById(id);
+  if (page) page.classList.add('active');
+  document.querySelectorAll('.sidebar-item').forEach(s => {
+    if (s.getAttribute('onclick') && s.getAttribute('onclick').includes(id)) s.classList.add('active');
+  });
+  window.scrollTo(0, 0);
+}
+
+/* ── FAQ ── */
+function toggleFaq(el) { el.parentElement.classList.toggle('open'); }
+
+/* ── Claims dropdown ── */
+function toggleHowClaims() {
+  const panel = document.getElementById('howClaimsPanel');
+  const btn = document.getElementById('howClaimsBtn');
+  const chevron = document.getElementById('howClaimsChevron');
+  const isOpen = panel.classList.contains('open');
+  panel.classList.toggle('open');
+  btn.classList.toggle('open');
+  chevron.style.transform = isOpen ? '' : 'rotate(180deg)';
+}
+document.addEventListener('click', function(e) {
+  const dropdown = document.querySelector('.how-claims-dropdown');
+  if (dropdown && !dropdown.contains(e.target)) {
+    const panel = document.getElementById('howClaimsPanel');
+    const btn = document.getElementById('howClaimsBtn');
+    const chevron = document.getElementById('howClaimsChevron');
+    if (panel) panel.classList.remove('open');
+    if (btn) btn.classList.remove('open');
+    if (chevron) chevron.style.transform = '';
+  }
+});
+
+/* ═══════════════════════════════════════════════
+   PRICING PAGE — Zone tab switcher
+═══════════════════════════════════════════════ */
+function switchZone(zone, btn) {
+  document.querySelectorAll('.zone-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.zone-pricing').forEach(z => z.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('zone-pricing-' + zone).classList.add('active');
+}
+/* ── SmartWork Tabs (FIX) ── */
+function switchSwTab(button, tabId) {
+  // Remove active from all tabs
+  document.querySelectorAll('.sw-tab').forEach(tab => {
+    tab.classList.remove('active');
+  });
+
+  // Add active to clicked tab
+  button.classList.add('active');
+
+  // Hide all tab contents
+  document.querySelectorAll('.sw-tab-content').forEach(content => {
+    content.classList.remove('active');
+  });
+
+  // Show selected tab
+  const target = document.getElementById(tabId);
+  if (target) target.classList.add('active');
+}
+
+/* ═══════════════════════════════════════════════
+   SIGN UP — 3-step flow data
+═══════════════════════════════════════════════ */
+// Price range display per zone per tier
+const ZONE_PRICES = {
+  A: {
+    1: { range: '₹35–₹70/week', min: '₹35', max: '₹70', label: 'Zone A · High Risk · 2.5% rate' },
+    2: { range: '₹90–₹130/week', min: '₹90', max: '₹130', label: 'Zone A · High Risk · 2.5% rate' },
+    3: { range: '₹150–₹210/week', min: '₹150', max: '₹210', label: 'Zone A · High Risk · 2.5% rate' }
+  },
+  B: {
+    1: { range: '₹25–₹50/week', min: '₹25', max: '₹50', label: 'Zone B · Moderate Risk · 1.7% rate' },
+    2: { range: '₹60–₹90/week', min: '₹60', max: '₹90', label: 'Zone B · Moderate Risk · 1.7% rate' },
+    3: { range: '₹105–₹145/week', min: '₹105', max: '₹145', label: 'Zone B · Moderate Risk · 1.7% rate' }
+  },
+  C: {
+    1: { range: '₹15–₹35/week', min: '₹15', max: '₹35', label: 'Zone C · Low Risk · 1.2% rate' },
+    2: { range: '₹40–₹60/week', min: '₹40', max: '₹60', label: 'Zone C · Low Risk · 1.2% rate' },
+    3: { range: '₹75–₹100/week', min: '₹75', max: '₹100', label: 'Zone C · Low Risk · 1.2% rate' }
+  }
+};
+const ZONE_LABELS = {
+  A: '🔴 Zone A — High Risk (Chennai, Mumbai, Kolkata, Delhi)',
+  B: '🟡 Zone B — Moderate Risk (Bengaluru, Hyderabad, Ahmedabad, Pune)',
+  C: '🟢 Zone C — Low Risk (Delhi, Pune, Jaipur)'
+};
+const TIER_NAMES = {
+  1: 'Tier 1 — Part-time (10–25 hrs/wk)',
+  2: 'Tier 2 — Regular (26–40 hrs/wk)',
+  3: 'Tier 3 — Full-time (41+ hrs/wk)'
+};
+const TIER_COVERS = {
+  1: 'Up to ₹2,800/week coverage',
+  2: 'Up to ₹5,150/week coverage',
+  3: 'Up to ₹8,400/week coverage'
+};
+
+let selectedZone = null;
+let selectedTierVal = null;
+
+/* Step navigation */
+function goStep(step) {
+  if (step === 2 && !selectedZone) {
+    alert('Please choose your city zone first.');
+    return;
+  }
+  if (step === 3 && !selectedTierVal) {
+    alert('Please choose a tier first.');
+    return;
+  }
+  document.querySelectorAll('.signup-step').forEach(s => s.classList.remove('active'));
+  document.getElementById('signup-step-' + step).classList.add('active');
+  // Update step dots
+  document.querySelectorAll('.step-dot').forEach((d, i) => {
+    d.classList.remove('active', 'done');
+    if (i + 1 < step) d.classList.add('done');
+    if (i + 1 === step) d.classList.add('active');
+  });
+  window.scrollTo(0, 0);
+}
+
+/* Zone selection */
+function selectZone(zone) {
+  selectedZone = zone;
+  document.querySelectorAll('.zone-choice').forEach(c => c.classList.remove('selected'));
+  document.getElementById('zc-' + zone).classList.add('selected');
+  // Pre-populate tier prices for step 2
+  updateTierPrices(zone);
+}
+
+function updateTierPrices(zone) {
+  const data = ZONE_PRICES[zone];
+  document.getElementById('po1-price').innerHTML = data[1].range.split('/')[0] + '<span>/wk range</span>';
+  document.getElementById('po1-range').textContent = TIER_COVERS[1];
+  document.getElementById('po2-price').innerHTML = data[2].range.split('/')[0] + '<span>/wk range</span>';
+  document.getElementById('po2-range').textContent = TIER_COVERS[2];
+  document.getElementById('po3-price').innerHTML = data[3].range.split('/')[0] + '<span>/wk range</span>';
+  document.getElementById('po3-range').textContent = TIER_COVERS[3];
+  // Zone label on step 2
+  const zl = document.getElementById('step2-zone-label');
+  if (zone === 'A') zl.innerHTML = '<span class="zone-badge-A"><span class="zone-dot" style="background:var(--red2);margin-right:4px;"></span>Zone A — High Risk</span>';
+  else if (zone === 'B') zl.innerHTML = '<span class="zone-badge-B"><span class="zone-dot" style="background:#E65100;margin-right:4px;"></span>Zone B — Moderate Risk</span>';
+  else zl.innerHTML = '<span class="zone-badge-C"><span class="zone-dot" style="background:var(--green2);margin-right:4px;"></span>Zone C — Low Risk</span>';
+}
+
+/* Tier selection */
+function selectTier(tier) {
+  selectedTierVal = tier;
+  document.querySelectorAll('.plan-option').forEach(p => p.classList.remove('selected'));
+  document.getElementById('po-' + tier).classList.add('selected');
+  // Show summary
+  if (selectedZone) {
+    const d = ZONE_PRICES[selectedZone][tier];
+    const summary = document.getElementById('plan-summary');
+    summary.style.display = 'block';
+    document.getElementById('summary-name').textContent = TIER_NAMES[tier];
+    document.getElementById('summary-zone').textContent = ZONE_LABELS[selectedZone];
+    document.getElementById('summary-price').textContent = d.range;
+    document.getElementById('summary-cover').textContent = TIER_COVERS[tier];
+    // Step 3 badge
+    document.getElementById('s3-plan-name').textContent = TIER_NAMES[tier] + ' · ' + (selectedZone === 'A' ? 'Zone A' : selectedZone === 'B' ? 'Zone B' : 'Zone C');
+    document.getElementById('s3-plan-price').textContent = d.range;
+  }
+}
+</script>
+</body>
+</html>
