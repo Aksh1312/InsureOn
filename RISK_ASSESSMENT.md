@@ -105,7 +105,7 @@ We keep things simple: you pay a small percentage of what you’re covered for. 
 | 31–35 hrs | ₹5,501–₹6,750 | ₹4,300 | ₹110/week | ₹75/week | ₹50/week |
 | 36–40 hrs | ₹6,751–₹8,000 | ₹5,150 | ₹130/week | ₹90/week | ₹60/week |
  
-> ✅ Ravi (₹4,000/week, Zone A) falls at the entry of Tier 2 → **~₹90/week base premium** — close to his stated willingness of ₹100/week.
+> Ravi (₹4,000/week, Zone A) falls at the entry of Tier 2 → **~₹90/week base premium** — close to his stated willingness of ₹100/week.
  
 ---
  
@@ -120,7 +120,7 @@ We keep things simple: you pay a small percentage of what you’re covered for. 
 | 61–70 hrs | ₹11,001–₹12,000 | ₹8,050 | ₹200/week | ₹135/week | ₹95/week |
 | 71+ hrs | ₹12,000+ | ₹8,400 | ₹210/week | ₹145/week | ₹100/week |
  
-> ✅ Karthik (₹11,000/week, Zone A) falls in the 61–70 hrs band → **₹200/week base premium** — proportional and sustainable.
+> Karthik (₹11,000/week, Zone A) falls in the 61–70 hrs band → **₹200/week base premium** — proportional and sustainable.
  
 ---
 
