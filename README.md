@@ -1,47 +1,7 @@
-# InsureOn — Income Protection Insurance for Delivery Gig Workers
+# InsureOn - Income Protection Insurance for Delivery Gig Workers
 
 
-We are designing a parametric income loss insurance platform for delivery gig workers, providing coverage against natural disasters, extreme weather, and other disruptions — with automated fraud detection and payouts.
-
----
-
-## 🚀 Tech Stack we aim to use
-
-To build InsureOn efficiently, we recommend the following tech stack which we have some experience with:
-
-### Backend
-- **Python (FastAPI)** — High-performance APIs and business logic
-- **PyTorch** — Deep learning models for fraud detection and risk scoring
-- **LibTorch** — C++ inference for production ML workloads (optional, for high-performance/edge deployment)
-- **Ray** — Distributed computing for scalable ML training and parallelized testing
-- **PostgreSQL** — Reliable, scalable relational database
-- **Redis** — Caching, real-time triggers, background jobs
-- **Celery** — Distributed task queue for automation and scheduled jobs
-- **Pandas, scikit-learn, XGBoost** — Data processing and classical ML
-
-### Frontend
-- **React (TypeScript)** — Modern, maintainable UI
-- **Material-UI or Chakra UI** — Beautiful, accessible component library
-- **Redux Toolkit or Zustand** — State management
-
-### DevOps/Infra
-- **Docker** — Containerization for all services
-- **Kubernetes** (or Docker Compose for MVP) — Orchestration and scaling
-- **GitHub Actions** — CI/CD pipelines
-- **AWS/GCP/Azure** — Cloud hosting, managed PostgreSQL, S3 for file storage
-
-### Integrations
-- **IMD/NDMA APIs** — Weather and disaster alerts
-- **UPI/Banking APIs** — Payouts
-- **SMS/Push Notification APIs** — Alerts and communication
-
-### Security/Compliance
-- **OAuth2/JWT** — Secure authentication
-- **Vault/Secrets Manager** — Managing sensitive keys
-
----
-
-This stack is scalable, developer-friendly, and well-suited for data-driven, event-based insurance platforms. PyTorch and Ray enable advanced ML and scalable experimentation. LibTorch is optional for C++/edge inference. Adjust as needed for your team and deployment needs.
+We are designing a parametric income loss insurance platform for delivery gig workers, providing coverage against natural disasters, extreme weather, and other disruptions - with automated fraud detection and payouts. We have chosen to focus on food delivery partners like Swiggy, Zomato, etc...
 
 We think that India has gracefully embraced the ordering-in culture. All around the nation, people (mostly people like us) prefer ordering in than to going out to eat. Such conviniences are only possible due to the hard workers completing hundreds of gigs, so that people get their food (and the workers their money).
 
@@ -51,7 +11,6 @@ We apologize beforehand for such a very long readme document, and we thank you f
 
 If possible, please leave us a Github issue so that we may correct ourselves.
 
----
 
 ## What We Cover
 
@@ -60,8 +19,6 @@ We aim to cover income loss for delivery gig workers including but not limited t
 - Extreme weather (heavy rain, storms preventing delivery, unbearable heat)
 - Civil unrest / curfews and other similar problems
 - Platform outages
-
----
 
 ## Zone Classification
 
@@ -79,20 +36,20 @@ Zone data is sourced from **IMD (India Meteorological Department)** and **NDMA**
 
 ---
 
-# MODULE 1 — Risk Assessment & Pricing
+# MODULE 1 - Risk Assessment & Pricing
 
 ## 👥 Worker Personas
 
 Based on some of the workers we interviewed live and some data we collected from feedbacks on Reddit, we classify workers into two personas.
 
-### 🔵 Persona 1 — Part-time Worker "Ravi"
+### 🔵 Persona 1 - Part-time Worker "Ravi"
 - Works **10–25 hrs/week**, earns ~**₹4,000/week**
 - Willing to spend **₹100/week** on insurance
 - Treats delivery as supplementary income
 
 Workers with the *"Ravi"* persona are people who feel that gig work is not essential for day to day life, but still rely on making deliveries to maintain flexibility in life, like saving up for a phone upgrade or similar. He prefers short distance jobs and works mainly on some peak hours when he is available. He feels risk abstract now, and some people in situations like *"Ravi"* may feel that insurance is a waste of money.
 
-### 🔴 Persona 2 — Full-time Worker "Karthik"
+### 🔴 Persona 2 - Full-time Worker "Karthik"
 - Works **40+ hrs/week**, earns ~**₹11,000/week** (≈ ₹44,000/month)
 - Treats delivery as primary income
 - Key concern: complete income wipeout during extended disasters
@@ -127,7 +84,7 @@ InsureOn aims to cover **70% of average weekly income** with a premium model of 
  
 ---
  
-### Tier 1 — Part-time (₹1,500–₹4,500/week)
+### Tier 1 - Part-time (₹1,500–₹4,500/week)
  
 | Weekly Hours | Est. Weekly Income | Coverage (70%) | Zone A | Zone B | Zone C |
 |---|---|---|---|---|---|
@@ -137,7 +94,7 @@ InsureOn aims to cover **70% of average weekly income** with a premium model of 
  
 ---
  
-### Tier 2 — Regular (₹4,501–₹8,000/week)
+### Tier 2 - Regular (₹4,501–₹8,000/week)
  
 | Weekly Hours | Est. Weekly Income | Coverage (70%) | Zone A | Zone B | Zone C |
 |---|---|---|---|---|---|
@@ -145,11 +102,11 @@ InsureOn aims to cover **70% of average weekly income** with a premium model of 
 | 31–35 hrs | ₹5,501–₹6,750 | ₹4,300 | ₹110/week | ₹75/week | ₹50/week |
 | 36–40 hrs | ₹6,751–₹8,000 | ₹5,150 | ₹130/week | ₹90/week | ₹60/week |
  
-> Ravi (₹4,000/week, Zone A) falls at the entry of Tier 2 → **~₹90/week base premium** — close to his stated willingness of ₹100/week.
+> Ravi (₹4,000/week, Zone A) falls at the entry of Tier 2 → **~₹90/week base premium** - close to his stated willingness of ₹100/week.
  
 ---
  
-### Tier 3 — Full-time (₹8,001–₹12,000+/week)
+### Tier 3 - Full-time (₹8,001–₹12,000+/week)
  
 > Maximum weekly income capped at **₹12,000/week (₹48,000/month)**
  
@@ -160,7 +117,7 @@ InsureOn aims to cover **70% of average weekly income** with a premium model of 
 | 61–70 hrs | ₹11,001–₹12,000 | ₹8,050 | ₹200/week | ₹135/week | ₹95/week |
 | 71+ hrs | ₹12,000+ | ₹8,400 | ₹210/week | ₹145/week | ₹100/week |
  
-> Karthik (₹11,000/week, Zone A) falls in the 61–70 hrs band → **₹200/week base premium** — proportional and sustainable.
+> Karthik (₹11,000/week, Zone A) falls in the 61–70 hrs band → **₹200/week base premium** - proportional and sustainable.
  
 ---
 
@@ -230,6 +187,8 @@ Depending the results from running the product in simulation and general perform
 | Growth (6–12 months) | Logistic Regression / Decision Tree |
 | Scale (12+ months) | XGBoost / Random Forest, pincode-level |
 
+We also plan to use Reinforcement Learning to learn patterns if needed.
+
 ---
 
 ## Dynamic Weekly Reassignment
@@ -271,22 +230,22 @@ The payout will be optimized to be sanctioned within 24-48 hours
 
 ---
 
-## SmartWork — Work Optimization Feature
+## SmartWork - Work Optimization Feature
 
-InsureOn doesn't just protect workers — it **actively helps them reduce risk** every week, and thereby increasing their income.
+InsureOn doesn't just protect workers - it **actively helps them reduce risk** every week, and thereby increasing their income.
 
 ### What SmartWork Does
 By analyzing the API data and existing historical data, we provide the following recommendations:
 - **Best time slots** to work for maximum orders
 - **High-earning zone** recommendations in their city
-- **Weather windows** — safe periods before/after rain
-- **Surge alerts** — festivals, weekends, events with high demand
-- **Risk advisories** — when NOT to work for safety
+- **Weather windows** - safe periods before/after rain
+- **Surge alerts** - festivals, weekends, events with high demand
+- **Risk advisories** - when NOT to work for safety
 
 ### Sample SmartWork report
 
 ```
-SmartWork Tips — This Week
+SmartWork Tips - This Week
 
 Best Time Slots:
    → Weekday evenings 7–9 PM   (dinner rush, highest order density)
@@ -306,7 +265,7 @@ Target:
    → Projected earnings: 10–15% above usual weekly average
 
 Risk Advisory:
-   → IMD alerts active in your zone — avoid working during alert hours
+   → IMD alerts active in your zone - avoid working during alert hours
 
 Optimal Shift Structure:
    → Split shifts: Late morning + Evening
@@ -323,11 +282,11 @@ Weather Strategy:
    → Heavy rain / storm = stop immediately, safety first
 
 Earnings Optimization:
-   → You don't need more hours — just shift when you work
+   → You don't need more hours - just shift when you work
    → Zone rotation can add ₹1,000–₹2,000/week without extra hours
 
 Risk Advisory:
-   → Active weather watch this week — keep insurance active
+   → Active weather watch this week - keep insurance active
 ```
 
 ### SmartWork Data Sources
@@ -346,7 +305,7 @@ We arrive at the report based on data from the sources:
 
 | Channel | When |
 |---|---|
-| Push notification | Every Monday morning — weekly tips |
+| Push notification | Every Monday morning - weekly tips |
 | In-app dashboard | Live surge zone map, updated daily |
 | SMS alert | Urgent risk advisories (IMD red/orange alerts) |
 | Weekly earnings report | Actual vs SmartWork projected earnings |
@@ -361,11 +320,11 @@ We arrive at the report based on data from the sources:
 
 ---
 
-# MODULE 2 — Fraud Detection System
+# MODULE 2 - Fraud Detection System
 
 ## Why We Built It This Way
 
-Let’s face it: insurance fraud is a real problem, but we believe most gig workers are honest. That’s why our system is “parametric”—meaning, claims are triggered by real-world events (like official weather alerts), not just someone saying “I lost income.” This wipes out most of the usual fraud headaches. For the rest, we use a smart, multi-layered approach—think of it as a security system with eight different locks, all working together. (If you’ve ever played Metal Gear Solid, you know: the more layers of security, the better. Just don’t get spotted by the exclamation mark)
+Let’s face it: insurance fraud is a real problem, but we believe most gig workers are honest. That’s why our system is “parametric”-meaning, claims are triggered by real-world events (like official weather alerts), not just someone saying “I lost income.” This wipes out most of the usual fraud headaches. For the rest, we use a smart, multi-layered approach-think of it as a security system with eight different locks, all working together. (If you’ve ever played Metal Gear Solid, you know: the more layers of security, the better. Just don’t get spotted by the exclamation mark)
 
 ## System Architecture (The Big Picture)
 
@@ -374,14 +333,14 @@ Here’s how our fraud detection system works under the hood. Think of it as a f
 ```
 Raw Signals
       │
-      ├── Layer 1 — Event Verification
-      ├── Layer 2 — Historical Weather Comparison
-      ├── Layer 3 — Worker Behaviour Risk Score
-      ├── Layer 4 — Platform Activity Verification
-      ├── Layer 5 — Income Pattern Analysis
-      ├── Layer 6 — Zone-Based Correlation
-      ├── Layer 7 — Nearby Zone Cross-Validation
-      └── Layer 8 — Behavioral Baseline Deviation
+      ├── Layer 1 - Event Verification
+      ├── Layer 2 - Historical Weather Comparison
+      ├── Layer 3 - Worker Behaviour Risk Score
+      ├── Layer 4 - Platform Activity Verification
+      ├── Layer 5 - Income Pattern Analysis
+      ├── Layer 6 - Zone-Based Correlation
+      ├── Layer 7 - Nearby Zone Cross-Validation
+      └── Layer 8 - Behavioral Baseline Deviation
                   │
                   ▼
       Logistic Regression Model
@@ -400,7 +359,7 @@ Raw Signals
 
 We don’t just rely on one check, we layer them up. Here’s what each layer does (and why it matters):
 
-### Layer 1 — Event Verification
+### Layer 1 - Event Verification
 Checks if a disaster really happened using official sources (IMD, NDMA, state alerts). If there’s no official event, the claim is flagged right away.
 
 | Alert Level | Signal Strength |
@@ -410,7 +369,7 @@ Checks if a disaster really happened using official sources (IMD, NDMA, state al
 | Yellow Alert | Weak confirmation |
 | No Alert | High fraud risk flag |
 
-### Layer 2 — Historical Weather Verification
+### Layer 2 - Historical Weather Verification
 We compare today’s weather to historical data. If it’s not unusually bad, we get suspicious.
 
 ```
@@ -420,7 +379,7 @@ else:
       fraud_risk += MODERATE
 ```
 
-### Layer 3 — Worker Behaviour Risk Score
+### Layer 3 - Worker Behaviour Risk Score
 We look at the worker’s history. Are they making claims all the time? Did they suddenly stop working? Or do they have a steady, honest record?
 
 | Signal | Interpretation |
@@ -438,11 +397,11 @@ worker_risk =
    + w3 * income_drop_pattern_score
 ```
 
-### Layer 4 — Platform Activity Verification
+### Layer 4 - Platform Activity Verification
 
 We check with Swiggy, Zomato, Blinkit, etc. Was the worker logged in before the event? Were they actually working? Did they go inactive right at claim time? (No rage-quitting allowed)
 
-### Layer 5 — Income Pattern Analysis
+### Layer 5 - Income Pattern Analysis
 We look for natural, gradual drops in income (which are normal in disasters) versus sudden, suspicious zeroes.
 
 ```
@@ -453,9 +412,9 @@ Baseline Income = Total Earnings (last 4–8 weeks) ÷ Working Days
 |---|---|
 | Gradual income drop | Likely genuine disruption |
 | Partial earnings retained | Consistent with real disaster |
-| Instant zero income at claim start | Suspicious — possible intentional stoppage |
+| Instant zero income at claim start | Suspicious - possible intentional stoppage |
 
-### Layer 6 — Zone-Based Risk Analysis
+### Layer 6 - Zone-Based Risk Analysis
 If lots of workers in a zone are affected, it’s probably real. If only one or two are, we look closer.
 
 | Zone | Workers | Claims | Signal |
@@ -463,7 +422,7 @@ If lots of workers in a zone are affected, it’s probably real. If only one or 
 | Zone A | 100 | 40 claims | Supports genuine event |
 | Zone B | 100 | 3 claims | Suspicious if disaster declared |
 
-### Layer 7 — Nearby Zone Cross-Validation
+### Layer 7 - Nearby Zone Cross-Validation
 Disasters don’t respect borders. If only one area is affected, that’s odd. We check if neighboring zones are seeing the same thing.
 
 | Zone | Claim Rate |
@@ -472,7 +431,7 @@ Disasters don’t respect borders. If only one area is affected, that’s odd. W
 | Zone B | 39% |
 | Zone C | 35% |
 
-### Layer 8 — Behavioral Baseline Deviation
+### Layer 8 - Behavioral Baseline Deviation
 
 We compare this week to the worker’s usual pattern. Are they suddenly working way less? Are they an outlier compared to their peers? (If you suddenly go from Sonic speed to standing still, we’ll notice.)
 
@@ -489,7 +448,7 @@ Normal week:  Mon: 7hrs | Tue: 8hrs | Wed: 6hrs | Thu: 7hrs
 Claim week:   Mon: 7hrs | Tue: 8hrs | Wed: 0hrs | Thu: 0hrs
 ```
 
-**Peer Comparison — Outlier Detection:**
+**Peer Comparison - Outlier Detection:**
 
 | Worker | Income Drop |
 |---|---|
@@ -532,7 +491,7 @@ Weights are retrained continuously on labelled historical claims.
 
 ## Graph-Based Fraud Ring Detection (Catching the Tricksters)
 
-Sometimes, groups try to game the system together. We use a “graph” approach—connecting the dots between workers, devices, payment accounts, and timing. If we see a cluster of suspiciously similar claims, we flag it for deep investigation.
+Sometimes, groups try to game the system together. We use a “graph” approach-connecting the dots between workers, devices, payment accounts, and timing. If we see a cluster of suspiciously similar claims, we flag it for deep investigation.
 
 - **Nodes** = Workers, Devices, Payment Accounts, Zones
 - **Edges** = Shared identifiers (device ID, UPI handle, bank account, claim timing)
@@ -578,11 +537,11 @@ When a fraud ring is detected, InsureOn does not automatically penalize every wo
 
 **Bottom line:** Even if you’re caught up in a flagged group, the system’s goal is to delay for further verification, not deny, whenever there’s doubt. Honest workers are protected at every step.
 
-# MODULE 3 — Parametric Automation
+# MODULE 3 - Parametric Automation
 
 ## What This Module Does (Automation, the InsureOn Way)
 
-When a natural disaster or severe weather event hits a registered city, our system jumps into action—no paperwork, no waiting, just help when it’s needed most.
+When a natural disaster or severe weather event hits a registered city, our system jumps into action-no paperwork, no waiting, just help when it’s needed most.
 
 - Detects the event automatically via IMD weather alerts
 - Opens claim records for every eligible worker automatically
@@ -599,15 +558,15 @@ Just like a classic RPG party, each sub-module has a special role:
 
 | Sub-module | Role |
 |---|---|
-| Sub-module 1 — Real-time Trigger Monitoring | Calls IMD APIs every 15 minutes, classifies alert, matches to worker zones |
-| Sub-module 2 — Automatic Claim Initiation | Creates claim records, monitors daily income for 5 consecutive loss days |
-| Sub-module 3 — Instant Payout Processing | Calculates payout, sends via UPI, notifies worker, writes audit log |
+| Sub-module 1 - Real-time Trigger Monitoring | Calls IMD APIs every 15 minutes, classifies alert, matches to worker zones |
+| Sub-module 2 - Automatic Claim Initiation | Creates claim records, monitors daily income for 5 consecutive loss days |
+| Sub-module 3 - Instant Payout Processing | Calculates payout, sends via UPI, notifies worker, writes audit log |
 
 ---
 
-## Sub-module 1 — Real-time Trigger Monitoring
+## Sub-module 1 - Real-time Trigger Monitoring
 
-We keep an eye on the weather, so you don’t have to. (Picture us as the “Oracle” from The Matrix—always watching for the next big event.) Here’s how we know when to act:
+We keep an eye on the weather, so you don’t have to. (Picture us as the “Oracle” from The Matrix-always watching for the next big event.) Here’s how we know when to act:
 
 | API | Purpose |
 |---|---|
@@ -615,15 +574,15 @@ We keep an eye on the weather, so you don’t have to. (Picture us as the “Ora
 | `nowcast_district_api.php?id={obj_id}` | Real-time current weather |
 
 > **API Access:** Email `helpdesk[at]imd.gov.in` to whitelist your server IP. Free access.  
-> **Fallback:** `weather.indianapi.in` as commercial backup — no IP whitelisting required.
+> **Fallback:** `weather.indianapi.in` as commercial backup - no IP whitelisting required.
 
 ### Alert Color Classification
 
 | Color | Severity | Platform Action |
 |---|---|---|
-| 🔴 Red | Severe — cyclone, extremely heavy rain | Trigger fires for **all zones (A, B, C)** |
-| 🟠 Orange | Significant — moderate-heavy rain | Trigger fires for **Zone A only** |
-| 🟡 Yellow | Minor — light rain | No trigger — log only |
+| 🔴 Red | Severe - cyclone, extremely heavy rain | Trigger fires for **all zones (A, B, C)** |
+| 🟠 Orange | Significant - moderate-heavy rain | Trigger fires for **Zone A only** |
+| 🟡 Yellow | Minor - light rain | No trigger - log only |
 | 🟢 Green | No event | No action |
 
 > **Yellow logging:** Three or more consecutive Yellow days in a zone → escalate for manual review.
@@ -632,15 +591,15 @@ We keep an eye on the weather, so you don’t have to. (Picture us as the “Ora
 
 ---
 
-## Sub-module 2 — Automatic Claim Initiation
+## Sub-module 2 - Automatic Claim Initiation
 
-This is where the magic happens—claims are created for you, not by you!
+This is where the magic happens-claims are created for you, not by you!
 
-### Phase 1 — Immediate *(runs once when trigger fires)*
+### Phase 1 - Immediate *(runs once when trigger fires)*
 - Fetch all workers in triggered zone with active policy and paid premium
 - Create claim record per worker → status: `monitoring`, loss counter: `0`
 
-### Phase 2 — Daily Income Check *(runs every midnight)*
+### Phase 2 - Daily Income Check *(runs every midnight)*
 - Pull today's earnings from platform API
 - Below 50% of baseline → loss counter **+1**
 - At or above 50% → counter **resets to zero**
@@ -656,16 +615,16 @@ Baseline Daily Income = Total Earnings (last 4 weeks) ÷ Working Days
 
 | Scenario | Pre-event Activity | During Event | Outcome |
 |---|---|---|---|
-| A — Disaster forced zero income | Active last 7 days | Zero earnings, zero logins | Eligible |
-| B — Platform outage | Active last 7 days | Zero earnings, outage logged | Eligible |
-| C — Voluntarily stopped | Active last 7 days | Zero earnings but logged in | Manual review |
-| D — Already inactive | Not active 7 days prior | No activity | Rejected |
+| A - Disaster forced zero income | Active last 7 days | Zero earnings, zero logins | Eligible |
+| B - Platform outage | Active last 7 days | Zero earnings, outage logged | Eligible |
+| C - Voluntarily stopped | Active last 7 days | Zero earnings but logged in | Manual review |
+| D - Already inactive | Not active 7 days prior | No activity | Rejected |
 
 ---
 
-## Sub-module 3 — Instant Payout Processing
+## Sub-module 3 - Instant Payout Processing
 
-When it’s time to pay, we do it fast and transparently. (No “Game Over” screens here—just instant respawn for your wallet)
+When it’s time to pay, we do it fast and transparently. (No “Game Over” screens here-just instant respawn for your wallet)
 
 ### Payout Calculation
 
@@ -712,18 +671,18 @@ monitoring
 Let’s walk through a typical disaster week:
 
 ```
-Day 0 — Disaster hits
+Day 0 - Disaster hits
 → IMD issues Red/Orange alert
 → Poller detects within 15 minutes
 → Deduplication check passes
 → Claim records opened for all eligible workers (status: monitoring)
 
-Day 1–4 — Daily midnight job runs
+Day 1–4 - Daily midnight job runs
 → Earnings below 50% baseline → loss counter increments
 → Earnings above 50% → counter resets
-→ Counter not yet at 5 — monitoring continues
+→ Counter not yet at 5 - monitoring continues
 
-Day 5 — Counter reaches 5
+Day 5 - Counter reaches 5
 → Claim status → payout_ready
 → Payout calculated (70% of weekly coverage)
 → UPI transfer dispatched
@@ -744,6 +703,43 @@ We want InsureOn to be here for the long run, so we keep an eye on the numbers:
 | Expense Ratio | ~25% |
 | Profit Margin | 10–15% |
 | Reinsurance Partner | GIC Re / Munich Re |
+
+---
+
+## Tech Stack we aim to use
+
+To build InsureOn, we plan to use the following tech stack which we have some experience with:
+
+### Backend
+- **Python (FastAPI)** - High-performance APIs and business logic
+- **PyTorch** - Deep learning models for fraud detection and risk scoring
+- **LibTorch** - C++ inference for production ML workloads (For high-performance/edge deployment)
+- **Ray** - Distributed computing for scalable ML training and parallelized testing with RL algorithms implementation
+- **PostgreSQL** - Reliable, scalable relational database
+- **Redis** - Caching, real-time triggers, background jobs
+- **Celery** - Distributed task queue for automation and scheduled jobs
+- **Pandas, scikit-learn, XGBoost** - Data processing and classical ML
+- **Farama Gymnasium** - For structuring simulation of RL is used
+
+### Frontend
+- **React (TypeScript)** - Modern, maintainable UI
+- **Material-UI or Chakra UI** - Beautiful, accessible component library
+- **Redux Toolkit or Zustand** - State management
+
+### DevOps/Infra
+- **Docker** - Containerization for all services
+- **Kubernetes** (or Docker Compose for MVP) - Orchestration and scaling
+- **GitHub Actions** - CI/CD pipelines
+- **AWS/GCP/Azure** - Cloud hosting, managed PostgreSQL, S3 for file storage
+
+### Integrations
+- **IMD/NDMA APIs** - Weather and disaster alerts
+- **UPI/Banking APIs** - Payouts
+- **SMS/Push Notification APIs** - Alerts and communication
+
+### Security/Compliance
+- **OAuth2/JWT** - Secure authentication
+- **Vault/Secrets Manager** - Managing sensitive keys
 
 ---
 
