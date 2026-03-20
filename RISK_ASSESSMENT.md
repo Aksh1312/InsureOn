@@ -1,10 +1,14 @@
 # InsureOn — Risk Assessment & Pricing
 
+Welcome to the heart of how InsureOn keeps things fair, affordable, and truly helpful for gig workers. Here’s how we figure out what you pay, what you get, and how we help you earn more—no jargon, just real talk and real numbers.
+
 A parametric income loss insurance platform designed for delivery gig workers, providing coverage against natural disasters, extreme weather, and other disruptions — with smart work optimization guidance built in.
 
 ---
 
 ## What We Cover
+
+We’re here to protect your income when life throws a spin ball. If you’re out delivering and something big stops you from working, we’ve got your back.
 
 Income loss for delivery gig workers due to:
 - Natural disasters (floods, cyclones, earthquakes)
@@ -16,6 +20,8 @@ Income loss for delivery gig workers due to:
 ---
 
 ## Zone Classification
+
+Not all cities face the same risks. We group them into zones based on how often disasters or disruptions happen. This way, your premium matches your real-world risk.
 
 Workers are assigned to a zone based on their registered city/pincode:
 
@@ -30,6 +36,8 @@ Zone data is sourced from **IMD (India Meteorological Department)** and **NDMA**
 ---
 
 ## Worker Personas
+
+We built InsureOn after talking to real gig workers. Meet Ravi and Karthik—two personas that help us design plans that actually fit your life.
 
 Based on real worker interviews, two primary personas have been identified:
 
@@ -50,6 +58,8 @@ Based on real worker interviews, two primary personas have been identified:
 
 ## Tier Structure
 
+Your tier is based on how many hours you work each week. The more you work, the higher your coverage—and the more we make sure you’re protected.
+
 Workers are dynamically assigned to tiers based on their **4-week average weekly working hours**:
 
 | Tier | Weekly Working Hours | Worker Type | Real Persona |
@@ -61,6 +71,8 @@ Workers are dynamically assigned to tiers based on their **4-week average weekly
 ---
 
 ## Pricing Structure
+
+We keep things simple: you pay a small percentage of what you’re covered for. The riskier your zone, the higher the rate—but it’s always fair and transparent.
  
 > Coverage = **70% of average weekly income** | Premium = **~2.5% of coverage** (Zone A base)
 > Maximum weekly income in Tier 3 capped at **₹12,000/week (₹48,000/month)**
@@ -114,6 +126,8 @@ Workers are dynamically assigned to tiers based on their **4-week average weekly
 
 ## Premium Loading & Discounts
 
+We reward safe, consistent workers and give discounts for things like no claims, working on multiple platforms, or paying annually. If you’re in a riskier area or want faster payouts, there’s a small extra charge.
+
 | Condition | Adjustment |
 |---|---|
 | No claims in past 6 months | –10% discount |
@@ -130,6 +144,8 @@ Workers are dynamically assigned to tiers based on their **4-week average weekly
 ---
 
 ## Predictive Risk Modeling — Persona Specific
+
+Every week, we recalculate your personal risk score. It’s like a health check for your work life—if your risk goes down, so can your premium.
 
 Each worker gets a **personal risk score** calculated weekly. This score adjusts their premium multiplier on top of the base tier rate.
 
@@ -162,6 +178,8 @@ Risk Score = (Zone × 0.30) + (Pincode Freq × 0.25) + (Work Hours × 0.20)
 ---
 
 ### Persona Risk Score Examples
+
+Let’s see how this works for our two main personas. Ravi and Karthik each get a score based on where they work, how much, and their history. The result? A premium that fits their real risk.
 
 #### Ravi (Part-time, Zone A)
 
@@ -203,6 +221,8 @@ Karthik's Final Premium = ₹190 × 1.40 = ₹266/week
 
 ### ML Model Upgrade Path
 
+We start with simple rules, but as we gather more data, our system gets smarter. Soon, machine learning will help us make things even fairer and more accurate.
+
 | Stage | Approach |
 |---|---|
 | Launch (0–6 months) | Rule-based weighted scoring above |
@@ -214,6 +234,8 @@ Karthik's Final Premium = ₹190 × 1.40 = ₹266/week
 ---
 
 ## Dynamic Weekly Reassignment
+
+Every Monday, we check your recent work and risk data, update your tier, and send you a fresh SmartWork report. You always know where you stand and how to get the most from your coverage.
 
 ```
 Every Monday:
@@ -241,6 +263,8 @@ Every Monday:
 
 ## Claim Eligibility Rules
 
+We only pay out when all the right conditions are met. That way, the system stays sustainable and honest workers get what they deserve—fast.
+
 A claim is valid when **all three** conditions are met:
 
 1. An **official disaster/weather event** is declared in the worker's registered zone (IMD Red/Orange alert or government notification)
@@ -261,6 +285,8 @@ Claim triggers if he earns below ₹400/day for 5+ consecutive days.
 
 ## Payout Structure
 
+The longer you’re affected, the more you get—up to 100% of your weekly coverage. And we pay out quickly, so you’re not left waiting.
+
 | Days of Confirmed Loss | Payout |
 |---|---|
 | 1–4 days | No payout (below minimum threshold) |
@@ -273,6 +299,8 @@ Claim triggers if he earns below ₹400/day for 5+ consecutive days.
 ---
 
 ## SmartWork — Work Optimization Feature
+
+InsureOn isn’t just about protection—it’s about helping you earn more, too. Every week, you get personalized tips on when and where to work for the best results, plus safety advice to keep you out of trouble.
 
 InsureOn doesn't just protect workers — it **actively helps them earn more** by telling them the best times and conditions to work each week.
 
@@ -345,6 +373,8 @@ Risk Advisory:
 
 ### How SmartWork Data is Generated
 
+We use real data from platforms, weather, and your own history to make sure our tips are actually useful—not just generic advice.
+
 | Data Source | Used For |
 |---|---|
 | Platform order history (Swiggy / Zomato / Dunzo API) | Peak hour and zone identification |
@@ -355,6 +385,8 @@ Risk Advisory:
 
 ### SmartWork Delivery Channels
 
+You get your SmartWork tips right where you need them: in the app, by SMS, or as a push notification. No digging around for info.
+
 | Channel | When |
 |---|---|
 | Push notification | Every Monday morning — weekly tips |
@@ -364,6 +396,8 @@ Risk Advisory:
 
 ### SmartWork Impact on Risk Score & Premium
 
+Follow the tips, stay safe, and you could see your premium go down. We believe in rewarding smart, safe work.
+
 | Worker Behavior | Risk Score Impact |
 |---|---|
 | Follows weather avoidance tips | –0.2 risk score reduction |
@@ -371,6 +405,8 @@ Risk Advisory:
 | Consistently works recommended safe slots | Eligible for **"Safe Worker" discount (–5% premium)** |
 
 ### SmartWork — Summary of Benefits
+
+It’s not just about insurance. With SmartWork, you can boost your earnings, stay safer, and even save on your premium—all with zero extra effort.
 
 | Benefit | For Part-time Worker | For Full-time Worker |
 |---|---|---|
@@ -383,6 +419,8 @@ Risk Advisory:
 
 ## Financial Sustainability Targets
 
+We keep a close eye on the numbers to make sure InsureOn is here for the long run. That means fair pricing, smart risk management, and strong partners.
+
 | Metric | Target |
 |---|---|
 | Loss Ratio | 55–65% |
@@ -393,6 +431,8 @@ Risk Advisory:
 ---
 
 ## Why This Model Works
+
+We built this model to be fair, fraud-resistant, and genuinely valuable for gig workers. It’s designed to scale, adapt, and keep getting better as we grow.
 
 | Advantage | Reason |
 |---|---|

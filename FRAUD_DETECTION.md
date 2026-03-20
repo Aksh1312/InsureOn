@@ -1,5 +1,7 @@
 # Gig Worker Insurance — Fraud Detection System
 
+Welcome to the detective agency of our insurance platform! Here, we make sure that only genuine claims get through, so honest gig workers are protected and the system stays fair for everyone. We use a blend of smart data, real-world signals, and a little bit of digital detective work—no magnifying glass required.
+
 ## Core Philosophy
 
 This insurance system is **parametric**, meaning claims are triggered by **objective external events** rather than self-reported damage. This alone eliminates most traditional insurance fraud.
@@ -11,6 +13,8 @@ Additionally, fraud ring detection is **graph-based**: workers, devices, payment
 ---
 
 ## System Architecture
+
+Think of this as a series of security gates. Each layer is a checkpoint, filtering out suspicious claims so only the real ones make it through. The result? A system that’s fair, fast, and always learning.
 
 ```
 Raw Signals
@@ -42,15 +46,14 @@ Raw Signals
 
 ## Layer 1 — Event Verification
 
+First, we check if a real disaster or disruption happened, using only trusted, official sources. If there’s no real event, the claim is flagged for review—no shortcuts!
+
 Confirms whether a disaster or disruption actually occurred using official external sources.
 
-**Data Sources:**
 - India Meteorological Department (IMD)
 - National Disaster Management Authority (NDMA)
 - State government disaster alerts
 - Weather APIs
-
-**Event Types Verified:** Floods, Cyclones, Heavy Rainfall, Storm Alerts, Government Curfews, Civil Unrest
 
 **Alert Severity Mapping:**
 
@@ -66,6 +69,8 @@ If no official event is detected, claims are immediately flagged for review.
 ---
 
 ## Layer 2 — Historical Weather Verification
+
+We compare today’s weather to what’s normal for this time of year. If it’s not unusually bad, we get a little suspicious—no crying wolf!
 
 Compares current conditions against historical baselines to detect abnormal intensity.
 
@@ -84,6 +89,8 @@ This prevents claims during normal weather conditions from passing undetected.
 
 ## Layer 3 — Worker Behaviour Risk Score
 
+We look at the worker’s history and patterns. Are they making claims all the time? Did they suddenly stop working? Or do they have a steady, honest record? The system rewards consistency and flags odd behavior.
+
 Each worker receives a dynamic fraud risk score based on historical activity patterns.
 
 **Key Signals:**
@@ -91,6 +98,19 @@ Each worker receives a dynamic fraud risk score based on historical activity pat
 | Signal | Interpretation |
 |---|---|
 | High claim frequency | Elevated risk |
+
+---
+
+## Identifying Genuine Workers Within a Fraud Ring
+
+When a fraud ring is detected, the system does not automatically penalize every worker in the cluster. Instead, it applies a second layer of analysis to identify and protect genuine claimants:
+
+- **Individual Behavioral Analysis:** Each worker’s activity, income, and work patterns are compared to their historical baseline and to their peers. Genuine workers typically show gradual income drops, consistent work history, and realistic behavioral changes during disasters.
+- **Device, Network, and Mobility Checks:** The system examines device integrity, network consistency, and movement realism for each worker. Honest workers display natural movement, degraded network quality during disasters, and no signs of spoofing or emulation.
+- **Peer Comparison:** Outlier detection is used to spot workers whose patterns differ significantly from the rest of the cluster. Genuine workers may have unique, non-synchronized claim timings and diverse behavioral signals.
+- **Manual Review for Edge Cases:** If a worker in a flagged cluster passes all individual checks, their claim is prioritized for manual review rather than automatic rejection.
+
+**Outcome:** This layered approach ensures that honest workers are not unfairly penalized, even if they are part of a flagged fraud ring. The system’s goal is to delay for further verification, not deny, whenever there is doubt.
 | Recent repeated claims | Higher suspicion |
 | Stable long-term working history | Lower risk |
 | Sudden unexplained inactivity | Possible manipulation |
@@ -111,6 +131,8 @@ Weights `w1`, `w2`, `w3` are trained and updated continuously via logistic regre
 
 ## Layer 4 — Platform Activity Verification
 
+We check with the delivery platforms to see if the worker was actually active before and during the event. If someone stopped working before the disaster, that’s a red flag. We want to help those who were truly affected.
+
 Verifies whether the worker was actively operating before and during the claimed disruption period.
 
 **Data Integrations:** Swiggy, Zomato, Blinkit (and similar delivery platforms)
@@ -125,6 +147,8 @@ Workers who show inactivity that predates the disaster event may have claims fla
 ---
 
 ## Layer 5 — Income Pattern Analysis
+
+We look for natural, gradual drops in income (which are normal in disasters) versus sudden, suspicious zeroes. If your earnings graph suddenly flatlines, it’s a red flag. But if it drops gradually, it’s likely real.
 
 The system calculates a baseline daily income from historical earnings:
 
@@ -146,6 +170,8 @@ A valid claim requires income to fall below **50% of baseline** for at least **5
 
 ## Layer 6 — Zone-Based Risk Analysis
 
+If lots of workers in a zone are affected, it’s probably real. If only one or two are, we look closer. We want to spot real disasters, not isolated incidents.
+
 Workers are assigned to zones (city / pincode level). Claims are compared across workers in the same zone.
 
 **Example:**
@@ -160,6 +186,8 @@ High simultaneous claim rates in a zone support genuine event confirmation. A lo
 ---
 
 ## Layer 7 — Nearby Zone Cross-Validation
+
+Disasters don’t respect borders. If only one area is affected, that’s odd. We check if neighboring zones are seeing the same thing. If not, we dig deeper.
 
 Genuine disasters typically affect multiple adjacent geographic areas.
 
@@ -177,10 +205,12 @@ If neighboring zones show no claims while one zone has high claims, the cluster 
 
 ## Layer 8 — Behavioral Baseline Deviation Detection
 
-Every worker builds a **behavioral fingerprint** over time. During a claim event, current behavior is compared to this baseline.
+Layer 8 now brings together all advanced behavioral, device, network, and mobility checks to create a robust, holistic fraud detection layer. We don’t just look at your work patterns—we also verify that your device, network, and movement all make sense for a real delivery worker.
+
+**Behavioral Baseline & Peer Comparison:**
+Every worker builds a behavioral fingerprint over time. During a claim event, we compare your current behavior to your baseline and to similar peers (same zone, same tier, similar hours). Sudden changes or outlier patterns are flagged for review.
 
 **Worker Behavioral Profile (Example):**
-
 | Metric | Normal Pattern |
 |---|---|
 | Login time | 9 AM – 10 AM |
@@ -190,7 +220,6 @@ Every worker builds a **behavioral fingerprint** over time. During a claim event
 | Working zones | Zone A + Zone B |
 
 **Deviation Score Formula (logistic regression input feature):**
-
 ```
 behavior_deviation =
     Δ working_hours
@@ -198,34 +227,35 @@ behavior_deviation =
   + Δ income_pattern
   + Δ delivery_density
   + zone_shift_indicator
+  + device_integrity_score
+  + network_consistency_score
+  + mobility_realism_score
 ```
 
 **Detecting Intentional Work Stoppage:**
-
 Normal week:
 ```
 Mon: 7 hrs | Tue: 8 hrs | Wed: 6 hrs | Thu: 7 hrs
 ```
-
 Claim week:
 ```
 Mon: 7 hrs | Tue: 8 hrs | Wed: 0 hrs | Thu: 0 hrs
 ```
-
 Abrupt stoppage precisely aligned with claim submission is a strong fraud signal.
 
+**Device Integrity Checks:**
+We look for signs of GPS spoofing, mock location apps, emulators, and sensor mismatches (e.g., GPS says “moving” but accelerometer says “stationary”).
+
+**Network Consistency Checks:**
+We compare IP geolocation to GPS, look for sudden IP jumps (VPN use), check ISP consistency, and monitor network quality. Genuine disasters often degrade network quality, so a perfect connection during a claimed event is suspicious.
+
+**Mobility Realism Checks:**
+We analyze your movement patterns—real workers move continuously, follow roads, and have realistic speeds. Spoofers “teleport,” stay static, or move in impossible ways. We score your path realism and flag anomalies.
+
 **Peer Comparison:**
+Workers are compared to similar peers. Outliers—like someone with a –100% income drop when everyone else is at –70%—are flagged for review.
 
-Workers are compared to similar peers (same zone, same tier, similar hours):
-
-| Worker | Income Drop |
-|---|---|
-| Worker A | –70% |
-| Worker B | –65% |
-| Worker C | –68% |
-| Worker D | –100% |
-
-Worker D is an outlier and is flagged for review.
+By combining all these signals, Layer 8 acts as a powerful, unified defense against both simple and sophisticated fraud attempts.
 
 ---
 
@@ -255,67 +285,6 @@ trust(behavior + network + platform_activity + mobility_pattern + device_integri
 
 ---
 
-### Layer 9 — Device Integrity Signals
-
-Spoofing apps and fake environments leave detectable traces at the device level.
-
-**Checks Performed:**
-- Mock location / developer mode detection (Android)
-- Emulator environment detection
-- App integrity validation
-- Sensor mismatch: GPS vs. accelerometer disagreement
-
-**Example:**
-```
-If GPS reports "moving through flood zone"
-   AND accelerometer reports "stationary":
-       → flag: sensor_mismatch = TRUE  🚨
-```
-
----
-
-### Layer 10 — Network Consistency Signals
-
-GPS coordinates can be spoofed, but network-level signals are significantly harder to fake.
-
-**Checks Performed:**
-- IP geolocation vs. GPS location mismatch
-- Sudden IP address jumps (VPN switching)
-- ISP consistency across session
-- Cell tower triangulation (where available)
-- Network quality during claimed disaster period
-
-**Example:**
-
-| Signal | Value | Verdict |
-|---|---|---|
-| GPS location | Chennai flood zone | — |
-| IP geolocation | Home WiFi, safe area | 🚨 Mismatch |
-
-**During genuine disasters**, network quality degrades: high packet loss, frequent disconnects, app timeouts. A claimant with a **perfect, stable internet connection** during a claimed flood event is a strong fraud signal.
-
----
-
-### Layer 11 — Mobility Realism Signals
-
-Real delivery workers follow predictable, road-constrained movement patterns. Spoofers typically reveal themselves through unnatural movement.
-
-**Real Worker Characteristics:**
-- Continuous movement with natural stop/start patterns
-- Routes follow actual road networks
-- Consistent speed ranges for vehicle type
-
-**Spoofer Characteristics:**
-- Teleportation between locations
-- Static position with declared GPS movement
-- Unnatural path geometry (cuts through buildings, water, etc.)
-
-**Checks Performed:**
-- Speed anomaly detection (impossibly fast movement)
-- Path realism scoring against road network
-- Movement continuity analysis
-
----
 
 ### Peer Consistency Cross-Check
 
