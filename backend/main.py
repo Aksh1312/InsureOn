@@ -16,14 +16,17 @@ def get_db():
         db.close()
 
 @app.post("/signup")
-def signup(email: str, password: str, db: Session = Depends(get_db)):
+def signup(email: str, password: str, platform: str, region: str, income: int, db: Session = Depends(get_db)):
     user = db.query(models.User).filter(models.User.email == email).first()
     if user:
         raise HTTPException(status_code=400, detail="Email already registered")
 
     new_user = models.User(
         email=email,
-        hashed_password=hash_password(password)
+        hashed_password=hash_password(password),
+        platform=platform,
+        region=region,
+        income=income
     )
     db.add(new_user)
     db.commit()

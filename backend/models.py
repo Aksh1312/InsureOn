@@ -6,4 +6,7 @@ class User(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     email = Column(String, unique=True, index=True)
+    platform = Column(String)
+    region = Column(String)
+    income = Column(Integer)
     hashed_password = Column(String)
