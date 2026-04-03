@@ -42,9 +42,9 @@ class PlatformEnum(str, enum.Enum):
     OTHER   = "other"
 
 class WorkShiftEnum(str, enum.Enum):
-    MORNING   = "morning"    # Risk score 2
-    AFTERNOON = "afternoon"  # Risk score 1
-    NIGHT     = "night"      # Risk score 3
+    MORNING   = "morning"
+    AFTERNOON = "afternoon"
+    NIGHT     = "night"
 
 
 PLATFORM_ENUM_DB = Enum(
@@ -75,6 +75,24 @@ class User(Base):
     policies  = relationship("Policy",         back_populates="user")
     claims    = relationship("Claim",          back_populates="user")
     risk_scores = relationship("RiskScore",    back_populates="user")
+    id               = Column(Integer, primary_key=True, index=True)
+    email            = Column(String, unique=True, index=True, nullable=False)
+    hashed_password  = Column(String, nullable=False)
+    platform         = Column(Enum(PlatformEnum), nullable=False)
+    region           = Column(String, nullable=False)
+    income           = Column(Integer, nullable=False)   # declared weekly income ₹
+    upi_id           = Column(String, nullable=True)     # for payout disbursement
+    is_active        = Column(Boolean, default=True)
+    created_at       = Column(DateTime(timezone=True), server_default=func.now())
+
+    profile       = relationship("WorkerProfile",  back_populates="user", uselist=False)
+    policies      = relationship("Policy",         back_populates="user")
+    claims        = relationship("Claim",          back_populates="user")
+    risk_scores   = relationship("RiskScore",      back_populates="user")
+    payouts       = relationship("Payout",         back_populates="user")
+    smartwork     = relationship("SmartWorkTip",   back_populates="user")
+    income_logs   = relationship("DailyIncomeLog", back_populates="user")
+    fraud_signals = relationship("FraudSignal",    back_populates="user")
 
 
 # ─────────────────────────────────────────────
