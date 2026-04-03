@@ -27,13 +27,7 @@ def create_profile(
 
     avg_daily  = round(current_user.income / 6, 2)  # assuming 6 working days
     coverage   = calculate_coverage(current_user.income)
-
-    # Get risk score to calculate premium multiplier
-    risk = calculate_and_save_risk_score(db, current_user.id) if crud.get_worker_profile(db, current_user.id) else None
-    multiplier = risk.multiplier if risk else 1.0
-
     base_premium  = calculate_base_premium(coverage, zone.value)
-    final_premium = calculate_final_premium(base_premium, multiplier)
 
     profile = crud.create_worker_profile(
         db=db,
@@ -47,8 +41,14 @@ def create_profile(
         primary_shift=primary_shift.value,
         is_multi_platform=is_multi_platform,
         weekly_coverage=coverage,
-        weekly_premium=final_premium,
+        weekly_premium=base_premium,
     )
+
+    # Risk score calculation depends on profile fields, so calculate after profile exists.
+    risk = calculate_and_save_risk_score(db, current_user.id)
+    final_premium = calculate_final_premium(base_premium, risk.multiplier)
+    profile = crud.update_worker_profile(db, current_user.id, weekly_premium=final_premium)
+
     return profile
 
 

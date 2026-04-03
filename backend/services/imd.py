@@ -17,6 +17,7 @@ Alert color logic:
 """
 
 import httpx
+import os
 from datetime import date
 from sqlalchemy.orm import Session
 from .. import models
@@ -38,6 +39,7 @@ DISTRICT_MAP = [
 
 IMD_BASE  = "https://city.imd.gov.in/citywx"
 FALLBACK  = "https://weather.indianapi.in"  # commercial fallback
+FALLBACK_API_KEY = os.getenv("FALLBACK_API_KEY", "")
 
 
 def _parse_alert_color(api_response: dict) -> str:
@@ -98,7 +100,7 @@ async def _poll_fallback(obj_id: int) -> str:
         async with httpx.AsyncClient(timeout=10.0) as client:
             resp = await client.get(
                 f"{FALLBACK}/district/{obj_id}",
-                headers={"x-api-key": "YOUR_FALLBACK_API_KEY"}
+                headers={"x-api-key": FALLBACK_API_KEY}
             )
         return _parse_alert_color(resp.json() if resp.status_code == 200 else {})
     except Exception:

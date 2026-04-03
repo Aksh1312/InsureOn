@@ -14,7 +14,7 @@ from .dependencies import get_db, get_current_user, create_access_token
 from . import schemas
 
 # Routers
-from .routers import workers, policies, claims, payouts, admin
+from .routers import workers, policies, claims, payouts
 
 # Services
 from .services.imd import run_imd_poll
@@ -165,7 +165,6 @@ app.include_router(workers.router)
 app.include_router(policies.router)
 app.include_router(claims.router)
 app.include_router(payouts.router)
-app.include_router(admin.router)
 
 
 # ─────────────────────────────────────────────

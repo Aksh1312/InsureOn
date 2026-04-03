@@ -123,9 +123,9 @@ def initiate_payout(db: Session, claim: models.Claim) -> models.Payout:
 def _get_worker_upi(db: Session, user_id: int) -> str:
     """
     TODO: Store UPI ID in WorkerProfile or a separate PaymentInfo table.
-    For now, fetch from User table (add upi_id column to User model).
-    Placeholder returns a mock UPI ID.
+    For now, fetch from User table.
     """
     user = crud.get_user_by_id(db, user_id)
-    # Replace with: return user.upi_id
+    if user and user.upi_id:
+        return user.upi_id
     return f"worker{user_id}@upi"

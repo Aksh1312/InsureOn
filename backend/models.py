@@ -61,20 +61,6 @@ PLATFORM_ENUM_DB = Enum(
 class User(Base):
     __tablename__ = "users"
 
-    id              = Column(Integer, primary_key=True, index=True)
-    email           = Column(String, unique=True, index=True, nullable=False)
-    hashed_password = Column(String, nullable=False)
-    platform        = Column(PLATFORM_ENUM_DB, nullable=False)
-    region          = Column(String, nullable=False)          # city name
-    income          = Column(Integer, nullable=False)         # weekly income in ₹
-    created_at      = Column(DateTime(timezone=True), server_default=func.now())
-    is_active       = Column(Boolean, default=True)
-
-    # relationships
-    profile   = relationship("WorkerProfile",  back_populates="user", uselist=False)
-    policies  = relationship("Policy",         back_populates="user")
-    claims    = relationship("Claim",          back_populates="user")
-    risk_scores = relationship("RiskScore",    back_populates="user")
     id               = Column(Integer, primary_key=True, index=True)
     email            = Column(String, unique=True, index=True, nullable=False)
     hashed_password  = Column(String, nullable=False)
@@ -275,6 +261,7 @@ class DailyIncomeLog(Base):
 
     # relationships
     claim = relationship("Claim", back_populates="income_logs")
+    user  = relationship("User", back_populates="income_logs")
 
 
 # ─────────────────────────────────────────────
@@ -306,6 +293,7 @@ class Payout(Base):
 
     # relationships
     claim = relationship("Claim", back_populates="payout")
+    user  = relationship("User", back_populates="payouts")
 
 
 # ─────────────────────────────────────────────
@@ -345,6 +333,7 @@ class FraudSignal(Base):
 
     # relationships
     claim = relationship("Claim", back_populates="fraud_signals")
+    user  = relationship("User", back_populates="fraud_signals")
 
 
 # ─────────────────────────────────────────────
@@ -371,3 +360,6 @@ class SmartWorkTip(Base):
     followed_safety_tips = Column(Boolean, nullable=True) # did worker follow weather advice?
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    # relationships
+    user = relationship("User", back_populates="smartwork")
