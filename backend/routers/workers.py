@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-import models, crud, schemas
-from dependencies import get_db, get_current_user
-from services.risk import calculate_and_save_risk_score
-from services.premium import assign_zone, assign_tier, calculate_coverage, calculate_base_premium, calculate_final_premium
+from .. import models, crud, schemas
+from ..dependencies import get_db, get_current_user
+from ..services.risk import calculate_and_save_risk_score
+from ..services.premium import assign_zone, assign_tier, calculate_coverage, calculate_base_premium, calculate_final_premium
 
 router = APIRouter(prefix="/workers", tags=["Workers"])
 

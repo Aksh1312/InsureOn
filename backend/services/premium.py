@@ -15,7 +15,7 @@ Tier assignment based on weekly income:
   Tier 3 → ₹8,001–₹12,000+
 """
 
-import models
+from .. import models
 
 ZONE_RATES = {
     "A": 0.025,

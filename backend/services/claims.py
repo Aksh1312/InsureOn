@@ -10,9 +10,9 @@ Runs every midnight for all active (monitoring) claims.
 
 from datetime import date
 from sqlalchemy.orm import Session
-import models
-import crud
-from services.payout import initiate_payout
+from .. import models
+from .. import crud
+from .payout import initiate_payout
 
 
 def run_daily_income_check(db: Session):

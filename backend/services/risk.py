@@ -16,8 +16,8 @@ Category + Multiplier:
 
 from datetime import date, timedelta
 from sqlalchemy.orm import Session
-import models
-import crud
+from .. import models
+from .. import crud
 
 # Pincode disaster frequency lookup (days/year)
 # Extend this dict as you onboard more cities

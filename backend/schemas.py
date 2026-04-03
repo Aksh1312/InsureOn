@@ -1,7 +1,7 @@
-from pydantic import BaseModel, EmailStr, field_validator
+from pydantic import BaseModel, ConfigDict, EmailStr, field_validator
 from typing import Optional
 from datetime import date, datetime
-from models import (
+from .models import (
     ZoneEnum, TierEnum, RiskCategoryEnum,
     ClaimStatusEnum, PlatformEnum, WorkShiftEnum
 )
@@ -42,8 +42,7 @@ class UserOut(BaseModel):
     income: int
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # ─────────────────────────────────────────────
@@ -65,8 +64,7 @@ class WorkerProfileOut(BaseModel):
     weekly_premium: float
     last_updated: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class WorkerProfileUpdate(BaseModel):
     avg_weekly_hours: Optional[float] = None
@@ -93,8 +91,7 @@ class RiskScoreOut(BaseModel):
     multiplier: float
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # ─────────────────────────────────────────────
@@ -114,8 +111,7 @@ class PolicyOut(BaseModel):
     is_active: bool
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # ─────────────────────────────────────────────
@@ -129,8 +125,7 @@ class IMDTriggerOut(BaseModel):
     zone_triggered: ZoneEnum
     triggered_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # ─────────────────────────────────────────────
@@ -153,8 +148,7 @@ class ClaimOut(BaseModel):
     is_fraud_flagged: bool
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # ─────────────────────────────────────────────
@@ -178,8 +172,7 @@ class DailyIncomeLogOut(BaseModel):
     is_below_threshold: bool
     platform_logged_in: bool
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # ─────────────────────────────────────────────
@@ -201,8 +194,7 @@ class PayoutOut(BaseModel):
     payout_percentage: float
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # ─────────────────────────────────────────────
@@ -226,8 +218,7 @@ class FraudSignalOut(BaseModel):
     decision: str
     evaluated_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # ─────────────────────────────────────────────
@@ -247,8 +238,7 @@ class SmartWorkTipOut(BaseModel):
     actual_earnings: Optional[float]
     followed_safety_tips: Optional[bool]
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class SmartWorkActualUpdate(BaseModel):
     actual_earnings: float

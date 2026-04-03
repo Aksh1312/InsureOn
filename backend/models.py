@@ -47,6 +47,13 @@ class WorkShiftEnum(str, enum.Enum):
     NIGHT     = "night"      # Risk score 3
 
 
+PLATFORM_ENUM_DB = Enum(
+    PlatformEnum,
+    name="platformenum",
+    values_callable=lambda enum_cls: [member.value for member in enum_cls],
+)
+
+
 # ─────────────────────────────────────────────
 # 1. USER  (your existing table — extended)
 # ─────────────────────────────────────────────
@@ -57,7 +64,7 @@ class User(Base):
     id              = Column(Integer, primary_key=True, index=True)
     email           = Column(String, unique=True, index=True, nullable=False)
     hashed_password = Column(String, nullable=False)
-    platform        = Column(Enum(PlatformEnum), nullable=False)
+    platform        = Column(PLATFORM_ENUM_DB, nullable=False)
     region          = Column(String, nullable=False)          # city name
     income          = Column(Integer, nullable=False)         # weekly income in ₹
     created_at      = Column(DateTime(timezone=True), server_default=func.now())

@@ -8,8 +8,8 @@ Data sources: platform order history, IMD forecast, city event calendar.
 import json
 from datetime import date, timedelta
 from sqlalchemy.orm import Session
-import models
-import crud
+from .. import models
+from .. import crud
 
 # Peak hours by day type
 PEAK_SLOTS = {

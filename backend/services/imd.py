@@ -19,8 +19,8 @@ Alert color logic:
 import httpx
 from datetime import date
 from sqlalchemy.orm import Session
-import models
-import crud
+from .. import models
+from .. import crud
 
 # IMD district obj_id mapping
 # Add more cities as you onboard them

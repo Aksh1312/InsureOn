@@ -13,8 +13,8 @@ Payout scale:
 import uuid
 from datetime import datetime
 from sqlalchemy.orm import Session
-import models
-import crud
+from .. import models
+from .. import crud
 
 
 PAYOUT_SCALE = {5: 0.70, 6: 0.85, 7: 1.00}
@@ -58,7 +58,7 @@ def initiate_payout(db: Session, claim: models.Claim) -> models.Payout:
     2. If approved → calculate amount → send UPI → write audit log → close claim
     3. If flagged → route to manual review
     """
-    from services.fraud import evaluate_claim
+    from .fraud import evaluate_claim
 
     # Run fraud evaluation
     fraud_signal = evaluate_claim(db, claim)

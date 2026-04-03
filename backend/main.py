@@ -7,19 +7,19 @@ from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 from contextlib import asynccontextmanager
 
-from db import SessionLocal, engine
-import models
-from auth import hash_password, verify_password
-from dependencies import get_db, get_current_user, create_access_token
-import schemas
+from .db import SessionLocal, engine
+from . import models
+from .auth import hash_password, verify_password
+from .dependencies import get_db, get_current_user, create_access_token
+from . import schemas
 
 # Routers
-from routers import workers, policies, claims, payouts
+from .routers import workers, policies, claims, payouts
 
 # Services
-from services.imd import run_imd_poll
-from services.claims import run_daily_income_check
-from services.smartwork import generate_tips_for_all_workers
+from .services.imd import run_imd_poll
+from .services.claims import run_daily_income_check
+from .services.smartwork import generate_tips_for_all_workers
 
 # ─────────────────────────────────────────────
 # CREATE ALL TABLES

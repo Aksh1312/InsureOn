@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-import models, crud, schemas
-from dependencies import get_db, get_current_user
-from services.fraud import evaluate_claim
+from .. import models, crud, schemas
+from ..dependencies import get_db, get_current_user
+from ..services.fraud import evaluate_claim
 
 router = APIRouter(prefix="/claims", tags=["Claims"])
 

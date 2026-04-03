@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import desc
 from datetime import date, datetime, timedelta
 from typing import Optional
-import models
+from . import models
 
 
 # ─────────────────────────────────────────────
