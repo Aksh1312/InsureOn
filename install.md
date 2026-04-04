@@ -51,6 +51,13 @@ The app will use `VITE_API_BASE_URL` if it exists; otherwise it uses the current
 
 ### 3) Simulation (optional)
 
+The simulation service is a separate FastAPI app used by the backend for test traffic and payouts.
+Run it before running `run_simulation.py` or any workflow that expects `INSUREON_SIM_URL`.
+
+```bash
+uvicorn InsureOnSim.main:app --reload --host 0.0.0.0 --port 8000
+```
+
 ```bash
 cd InsureOnSim
 python -m venv .venv
@@ -61,9 +68,21 @@ export SIM_TEST_API_KEY="dev-sim-key"
 uvicorn main:app --reload --host 0.0.0.0 --port 8001
 ```
 
+Key environment variables:
+
+- `INSUREON_BACKEND_URL` should point to the backend base URL (default in examples: http://127.0.0.1:8000).
+- `SIM_TEST_API_KEY` must match the backend value.
+
 Then run the simulation script in the repo root:
 
 ```bash
+python run_simulation.py
+```
+
+If you want to target a non-default backend URL, set it before running the script:
+
+```bash
+export INSUREON_BACKEND_URL="http://127.0.0.1:8000"
 python run_simulation.py
 ```
 
@@ -83,6 +102,8 @@ The API and SPA will be available at `http://localhost:8000`.
 
 Notes:
 - If you also run InsureOnSim, update `INSUREON_SIM_URL` to match where it is running.
+- If InsureOnSim runs on your host (default: http://127.0.0.1:8001), keep `INSUREON_SIM_URL` set to `http://host.docker.internal:8001` for Docker.
+- If InsureOnSim runs in another container, connect both containers to the same network and set `INSUREON_SIM_URL` to that container name (for example, `http://insureon-sim:8001`).
 - For production, configure a real database and tighten CORS.
 - The image includes a bundled `insureon.db` sqlite file; remove it and configure PostgreSQL for persistent storage.
 
