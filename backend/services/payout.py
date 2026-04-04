@@ -11,13 +11,20 @@ Payout scale:
 """
 
 import uuid
+import os
 from datetime import datetime
+import httpx
 from sqlalchemy.orm import Session
 from .. import models
 from .. import crud
 
 
 PAYOUT_SCALE = {5: 0.70, 6: 0.85, 7: 1.00}
+UPI_GATEWAY_URL = os.getenv("UPI_GATEWAY_URL", "").rstrip("/")
+UPI_GATEWAY_PATH = os.getenv("UPI_GATEWAY_PATH", "/payments/upi")
+BANK_TRANSFER_GATEWAY_URL = os.getenv("BANK_TRANSFER_GATEWAY_URL", "").rstrip("/")
+BANK_TRANSFER_GATEWAY_PATH = os.getenv("BANK_TRANSFER_GATEWAY_PATH", "/payments/bank-transfer")
+PAYMENT_TIMEOUT_SECONDS = float(os.getenv("PAYMENT_TIMEOUT_SECONDS", "10"))
 
 
 def _calculate_payout_amount(weekly_coverage: float, days_of_loss: int) -> tuple[float, float]:
@@ -29,13 +36,25 @@ def _calculate_payout_amount(weekly_coverage: float, days_of_loss: int) -> tuple
 
 def _send_upi_payment(upi_id: str, amount: float) -> str:
     """
-    TODO: Replace with real UPI gateway integration.
-    Recommended gateways: Razorpay or PayU.
-
     Returns transaction_id on success.
     Raises Exception on failure (triggers fallback to bank transfer).
     """
-    # Mock: generate a fake transaction ID for now
+    if UPI_GATEWAY_URL:
+        payload = {
+            "upi_id": upi_id,
+            "amount": amount,
+            "currency": "INR",
+            "reference": f"claim-upi-{uuid.uuid4().hex[:12].upper()}",
+        }
+        with httpx.Client(base_url=UPI_GATEWAY_URL, timeout=PAYMENT_TIMEOUT_SECONDS) as client:
+            resp = client.post(UPI_GATEWAY_PATH, json=payload)
+        resp.raise_for_status()
+        try:
+            body = resp.json()
+        except Exception:
+            body = {}
+        return body.get("transaction_id") or body.get("id") or payload["reference"]
+
     transaction_id = f"TXN_{uuid.uuid4().hex[:12].upper()}"
     print(f"[UPI MOCK] Sending ₹{amount} to {upi_id} → txn: {transaction_id}")
     return transaction_id
@@ -43,9 +62,25 @@ def _send_upi_payment(upi_id: str, amount: float) -> str:
 
 def _send_bank_transfer(user_id: int, amount: float) -> str:
     """
-    Fallback if UPI fails.
-    TODO: Integrate with bank transfer API.
+    Fallback if UPI fails. Uses a configured bank transfer gateway when available,
+    otherwise falls back to a local mock transaction id.
     """
+    if BANK_TRANSFER_GATEWAY_URL:
+        payload = {
+            "user_id": user_id,
+            "amount": amount,
+            "currency": "INR",
+            "reference": f"claim-bank-{uuid.uuid4().hex[:12].upper()}",
+        }
+        with httpx.Client(base_url=BANK_TRANSFER_GATEWAY_URL, timeout=PAYMENT_TIMEOUT_SECONDS) as client:
+            resp = client.post(BANK_TRANSFER_GATEWAY_PATH, json=payload)
+        resp.raise_for_status()
+        try:
+            body = resp.json()
+        except Exception:
+            body = {}
+        return body.get("transaction_id") or body.get("id") or payload["reference"]
+
     transaction_id = f"BANK_{uuid.uuid4().hex[:12].upper()}"
     print(f"[BANK MOCK] Sending ₹{amount} to user_id={user_id} → txn: {transaction_id}")
     return transaction_id
@@ -121,10 +156,6 @@ def initiate_payout(db: Session, claim: models.Claim) -> models.Payout:
 
 
 def _get_worker_upi(db: Session, user_id: int) -> str:
-    """
-    TODO: Store UPI ID in WorkerProfile or a separate PaymentInfo table.
-    For now, fetch from User table.
-    """
     user = crud.get_user_by_id(db, user_id)
     if user and user.upi_id:
         return user.upi_id

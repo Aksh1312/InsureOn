@@ -53,15 +53,47 @@ def layer_1_event_verification(db: Session, claim: models.Claim) -> float:
     )
 
 
-def layer_2_weather_baseline(claim: models.Claim) -> float:
+def layer_2_weather_baseline(db: Session, claim: models.Claim) -> float:
     """
-    TODO: Compare today's rainfall with historical 90th percentile.
-    Requires integration with historical weather DB or API.
-    Returns 0.0 if event is historically severe, 0.5 if borderline, 1.0 if normal.
-    Mock implementation — replace with real historical comparison.
+    Compare the trigger's severity against the historical 90th percentile for the same zone.
+    Returns a lower fraud score when today's event is unusually severe for that zone.
     """
-    # Placeholder — always return 0.1 (mild suspicion) until real data integrated
-    return 0.1
+    trigger = db.query(models.IMDTriggerEvent).filter(
+        models.IMDTriggerEvent.id == claim.trigger_event_id
+    ).first()
+
+    if not trigger:
+        return 0.5
+
+    severity_by_color = {"GREEN": 1.0, "YELLOW": 2.0, "ORANGE": 3.0, "RED": 4.0}
+    current_severity = severity_by_color.get((trigger.alert_color or "").upper(), 2.0)
+
+    historical_triggers = (
+        db.query(models.IMDTriggerEvent)
+        .filter(
+            models.IMDTriggerEvent.zone_triggered == trigger.zone_triggered,
+            models.IMDTriggerEvent.id != trigger.id,
+        )
+        .order_by(models.IMDTriggerEvent.triggered_at.desc())
+        .limit(180)
+        .all()
+    )
+
+    if not historical_triggers:
+        return 0.2 if current_severity >= 3.0 else 0.5
+
+    historical_severities = sorted(
+        severity_by_color.get((item.alert_color or "").upper(), 2.0)
+        for item in historical_triggers
+    )
+    index_90 = max(0, int(round(0.90 * (len(historical_severities) - 1))))
+    p90 = historical_severities[index_90]
+
+    if current_severity >= p90:
+        return 0.0
+    if current_severity >= historical_severities[len(historical_severities) // 2]:
+        return 0.3
+    return 0.8
 
 
 def layer_3_worker_behaviour(db: Session, user_id: int) -> float:
@@ -339,7 +371,7 @@ def _get_decision(fraud_prob: float) -> str:
         return "auto_approve"
     elif fraud_prob < 0.50:
         return "fast_review"
-    elif fraud_prob < 0.80:
+    elif fraud_prob < 0.70:
         return "manual"
     else:
         return "reject"
@@ -352,7 +384,7 @@ def evaluate_claim(db: Session, claim: models.Claim) -> models.FraudSignal:
     Runs all 8 layers, computes fraud probability, saves FraudSignal.
     """
     l1 = layer_1_event_verification(db, claim)
-    l2 = layer_2_weather_baseline(claim)
+    l2 = layer_2_weather_baseline(db, claim)
     l3 = layer_3_worker_behaviour(db, claim.user_id)
     l4 = layer_4_platform_activity(db, claim)
     l5 = layer_5_income_pattern(db, claim)

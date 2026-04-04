@@ -1,10 +1,36 @@
+import os
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from datetime import date, timedelta
+import httpx
 from .. import models, crud, schemas
 from ..dependencies import get_db, get_current_user
 
 router = APIRouter(prefix="/policies", tags=["Policies"])
+
+POLICY_PAYMENT_GATEWAY_URL = os.getenv("POLICY_PAYMENT_GATEWAY_URL", "").rstrip("/")
+POLICY_PAYMENT_GATEWAY_PATH = os.getenv("POLICY_PAYMENT_GATEWAY_PATH", "/payments/policy")
+POLICY_PAYMENT_TIMEOUT_SECONDS = float(os.getenv("POLICY_PAYMENT_TIMEOUT_SECONDS", "10"))
+
+
+def _capture_policy_payment(policy: models.Policy, user: models.User) -> None:
+    if not POLICY_PAYMENT_GATEWAY_URL:
+        return
+
+    payload = {
+        "policy_id": policy.id,
+        "user_id": user.id,
+        "amount": policy.weekly_premium,
+        "currency": "INR",
+        "email": user.email,
+        "week_start_date": policy.week_start_date.isoformat(),
+    }
+
+    with httpx.Client(base_url=POLICY_PAYMENT_GATEWAY_URL, timeout=POLICY_PAYMENT_TIMEOUT_SECONDS) as client:
+        resp = client.post(POLICY_PAYMENT_GATEWAY_PATH, json=payload)
+
+    resp.raise_for_status()
+
 
 
 @router.post("/issue", response_model=schemas.PolicyOut)
@@ -57,7 +83,7 @@ def pay_premium(
     if policy.is_paid:
         raise HTTPException(status_code=400, detail="Premium already paid")
 
-    # TODO: Integrate actual payment gateway (Razorpay / PayU) here
+    _capture_policy_payment(policy, current_user)
     updated = crud.mark_policy_paid(db, policy_id)
     return updated
 
