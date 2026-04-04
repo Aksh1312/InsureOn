@@ -1,0 +1,3 @@
+[submodule "InsureOnSim"]
+	path = InsureOnSim
+	url = https://github.com/SandyTheAdventurer/InsureOnSim.git

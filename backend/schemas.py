@@ -243,3 +243,26 @@ class SmartWorkTipOut(BaseModel):
 class SmartWorkActualUpdate(BaseModel):
     actual_earnings: float
     followed_safety_tips: bool
+
+
+# ─────────────────────────────────────────────
+# SIMULATION TESTING
+# ─────────────────────────────────────────────
+
+class SimTriggerRequest(BaseModel):
+    district: str
+    zone: ZoneEnum
+    alert_color: str = "RED"
+
+
+class SimTriggerResponse(BaseModel):
+    district: str
+    zone: ZoneEnum
+    alert_color: str
+    claims_opened: int
+
+
+class SimMonitoringProcessResponse(BaseModel):
+    processed: int
+    status_counts: dict[str, int]
+    results: list[dict]

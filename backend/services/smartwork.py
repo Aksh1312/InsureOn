@@ -45,7 +45,6 @@ SURGE_EVENTS = [
 
 def _get_weather_advice(zone: str, imd_alert: str = "clear") -> str:
     """
-    TODO: Replace imd_alert with real IMD API call for the worker's district.
     zone: "A", "B", or "C"
     imd_alert: "clear", "light", "heavy", "red", "orange"
     """
@@ -54,6 +53,22 @@ def _get_weather_advice(zone: str, imd_alert: str = "clear") -> str:
     if imd_alert == "orange" and zone == "A":
         return WEATHER_TEMPLATES["orange"]
     return WEATHER_TEMPLATES.get(imd_alert, WEATHER_TEMPLATES["clear"])
+
+
+def _get_latest_imd_alert_for_zone(db: Session, zone: str) -> str:
+    latest_trigger = (
+        db.query(models.IMDTriggerEvent)
+        .filter(models.IMDTriggerEvent.zone_triggered == zone)
+        .order_by(models.IMDTriggerEvent.triggered_at.desc())
+        .first()
+    )
+    if not latest_trigger:
+        return "clear"
+
+    alert_color = (latest_trigger.alert_color or "").strip().lower()
+    if alert_color in WEATHER_TEMPLATES:
+        return alert_color
+    return "clear"
 
 
 def _get_risk_advisory(zone: str, imd_alert: str = "clear") -> str:
@@ -78,7 +93,7 @@ def _project_earnings(avg_weekly_income: float, tier: str) -> float:
 def generate_weekly_tip(
     db: Session,
     user_id: int,
-    imd_alert: str = "clear",     # replace with real IMD call
+    imd_alert: str = "clear",
 ) -> models.SmartWorkTip:
     """
     Generate and save this week's SmartWork tip for a worker.
@@ -93,6 +108,7 @@ def generate_weekly_tip(
 
     zone = profile.zone.value if hasattr(profile.zone, 'value') else profile.zone
     tier = profile.tier.value if hasattr(profile.tier, 'value') else profile.tier
+    resolved_imd_alert = _get_latest_imd_alert_for_zone(db, zone) if imd_alert == "clear" else imd_alert
 
     # Build tip content
     best_slots = PEAK_SLOTS["weekday"] + PEAK_SLOTS["weekend"]
@@ -108,8 +124,8 @@ def generate_weekly_tip(
     else:
         zones_advice = HIGH_EARNING_ZONES[:2]
 
-    weather_advice = _get_weather_advice(zone, imd_alert)
-    risk_advisory  = _get_risk_advisory(zone, imd_alert)
+    weather_advice = _get_weather_advice(zone, resolved_imd_alert)
+    risk_advisory  = _get_risk_advisory(zone, resolved_imd_alert)
     projected      = _project_earnings(profile.avg_weekly_income, tier)
 
     tip = crud.create_smartwork_tip(
