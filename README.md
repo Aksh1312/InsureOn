@@ -10,6 +10,11 @@ We apologize beforehand for such a very long readme document, and we thank you f
 
 If possible, please leave us a Github issue so that we may correct ourselves.
 
+## Setup and Deployment
+
+- Local setup guide: [install.md](install.md)
+- Docker: [Dockerfile](Dockerfile)
+
 
 ## What We Cover
 

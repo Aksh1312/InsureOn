@@ -81,6 +81,14 @@ export default function Signup() {
         <Text mt={2} color="ink.600">
           Set your platform details and get weekly coverage right away.
         </Text>
+        <Box mt={4} bg="ink.50" borderRadius="16px" px={4} py={3} borderWidth="1px" borderColor="blackAlpha.100">
+          <Text fontSize="sm" color="ink.700">
+            Testing login: worker7@sim.insureon.dev
+          </Text>
+          <Text fontSize="sm" color="ink.700">
+            Password: sim-worker-7-pass
+          </Text>
+        </Box>
         <Stack mt={6} as="form" gap={4} onSubmit={handleSubmit}>
           <Box>
             <Text fontSize="sm" fontWeight={600} color="ink.700">

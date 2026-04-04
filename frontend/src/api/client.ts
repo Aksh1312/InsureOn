@@ -1,8 +1,7 @@
-const DEFAULT_BASE = 'http://localhost:8000'
+const ENV_BASE = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.trim()
+const DEFAULT_BASE = ENV_BASE && ENV_BASE.length > 0 ? ENV_BASE : window.location.origin
 
-export const API_BASE_URL =
-  (import.meta.env.VITE_API_BASE_URL as string | undefined)?.replace(/\/$/, '') ||
-  DEFAULT_BASE
+export const API_BASE_URL = DEFAULT_BASE.replace(/\/$/, '')
 
 export type ApiOptions = RequestInit & {
   auth?: boolean
