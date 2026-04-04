@@ -4,7 +4,7 @@ This guide covers local development and Docker deployment for the InsureOn backe
 
 ## Prerequisites
 
-- Python 3.10+
+- Python 3.11+
 - Node.js 20+
 - PostgreSQL (optional, required for persistent data)
 
@@ -73,7 +73,7 @@ Build and run the container:
 
 ```bash
 docker build -t insureon .
-docker run -p 8000:8000 \
+docker run -p 8000:7860 \
   -e SIM_TEST_API_KEY="dev-sim-key" \
   -e INSUREON_SIM_URL="http://host.docker.internal:8001" \
   insureon
@@ -84,3 +84,14 @@ The API and SPA will be available at `http://localhost:8000`.
 Notes:
 - If you also run InsureOnSim, update `INSUREON_SIM_URL` to match where it is running.
 - For production, configure a real database and tighten CORS.
+- The image includes a bundled `insureon.db` sqlite file; remove it and configure PostgreSQL for persistent storage.
+
+Optional: keep port 8000 inside the container by setting `PORT`:
+
+```bash
+docker run -p 8000:8000 \
+  -e PORT=8000 \
+  -e SIM_TEST_API_KEY="dev-sim-key" \
+  -e INSUREON_SIM_URL="http://host.docker.internal:8001" \
+  insureon
+```
