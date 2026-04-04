@@ -9,10 +9,20 @@ Runs every midnight for all active (monitoring) claims.
 """
 
 from datetime import date
+import os
+import re
+from collections import Counter
+
+import httpx
 from sqlalchemy.orm import Session
 from .. import models
 from .. import crud
 from .payout import initiate_payout
+
+
+SIM_BASE_URL = os.getenv("INSUREON_SIM_URL", "http://127.0.0.1:8001").rstrip("/")
+SIM_HTTP_TIMEOUT = float(os.getenv("INSUREON_SIM_TIMEOUT_SECONDS", "10"))
+SIM_EMAIL_PATTERN = re.compile(r"^worker(\d+)@sim\.insureon\.dev$")
 
 
 def run_daily_income_check(db: Session):
@@ -32,6 +42,20 @@ def run_daily_income_check(db: Session):
     return results
 
 
+def run_simulation_monitoring_cycle(db: Session) -> dict:
+    """
+    Runs one monitoring cycle for all active claims and returns a compact summary.
+    Intended for simulation integration tests, not public production traffic.
+    """
+    results = run_daily_income_check(db)
+    status_counts = Counter(result.get("status", "unknown") for result in results)
+    return {
+        "processed": len(results),
+        "status_counts": dict(status_counts),
+        "results": results,
+    }
+
+
 def process_claim_income(db: Session, claim: models.Claim) -> dict:
     """
     Process one claim for today:
@@ -47,8 +71,8 @@ def process_claim_income(db: Session, claim: models.Claim) -> dict:
     if not profile:
         return {"claim_id": claim.id, "status": "skipped", "reason": "no profile"}
 
-    today_income      = _fetch_today_income(claim.user_id)  # replace with real API
-    platform_logged_in = _check_platform_login(claim.user_id)  # replace with real API
+    today_income      = _fetch_today_income(db, claim.user_id)
+    platform_logged_in = _check_platform_login(db, claim.user_id)
     baseline          = profile.avg_daily_income
 
     # Log today's income
@@ -137,18 +161,44 @@ def _detect_inactivity_scenario(
     return "A"  # earning something, genuine partial loss
 
 
-def _fetch_today_income(user_id: int) -> float:
-    """
-    TODO: Replace with real Swiggy / Zomato / Dunzo / Blinkit API call.
-    Returns today's earnings in ₹ for the given worker.
-    """
-    # Mock: return 0 to simulate disaster scenario for testing
-    return 0.0
+def _resolve_sim_worker_id(db: Session, user_id: int) -> int | None:
+    user = crud.get_user_by_id(db, user_id)
+    if not user:
+        return None
+
+    if user.email:
+        match = SIM_EMAIL_PATTERN.match(user.email)
+        if match:
+            return int(match.group(1))
+    return None
 
 
-def _check_platform_login(user_id: int) -> bool:
+def _fetch_sim_platform_metrics(db: Session, user_id: int) -> dict:
+    worker_id = _resolve_sim_worker_id(db, user_id)
+    if worker_id is None:
+        return {"income_earned": 0.0, "platform_logged_in": False}
+
+    try:
+        with httpx.Client(base_url=SIM_BASE_URL, timeout=SIM_HTTP_TIMEOUT) as client:
+            resp = client.get(f"/worker/{worker_id}/platform-metrics")
+        if resp.status_code == 200:
+            return resp.json()
+        return {"income_earned": 0.0, "platform_logged_in": False}
+    except Exception:
+        return {"income_earned": 0.0, "platform_logged_in": False}
+
+
+def _fetch_today_income(db: Session, user_id: int) -> float:
     """
-    TODO: Replace with real platform API call to check if worker
-    was logged into the app today.
+    Returns today's earnings in ₹ from InsureOnSim platform telemetry.
     """
-    return False
+    metrics = _fetch_sim_platform_metrics(db, user_id)
+    return float(metrics.get("income_earned", 0.0))
+
+
+def _check_platform_login(db: Session, user_id: int) -> bool:
+    """
+    Returns whether worker logged in today from InsureOnSim platform telemetry.
+    """
+    metrics = _fetch_sim_platform_metrics(db, user_id)
+    return bool(metrics.get("platform_logged_in", False))

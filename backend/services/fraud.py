@@ -368,6 +368,12 @@ def evaluate_claim(db: Session, claim: models.Claim) -> models.FraudSignal:
     # Update claim fraud fields
     claim.fraud_probability = fraud_prob
     claim.is_fraud_flagged  = (decision in ("manual", "reject")) or is_ring
+    if decision == "reject":
+        claim.status = models.ClaimStatusEnum.REJECTED
+        claim.monitoring_end = date.today()
+    elif claim.is_fraud_flagged:
+        claim.status = models.ClaimStatusEnum.MANUAL_REVIEW
+        claim.monitoring_end = date.today()
     db.commit()
 
     signal = crud.create_fraud_signal(

@@ -7,7 +7,7 @@ from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 from contextlib import asynccontextmanager
 
-from .db import SessionLocal, engine
+from .db import SessionLocal, engine, apply_legacy_schema_patches
 from . import models
 from .auth import hash_password, verify_password
 from .dependencies import get_db, get_current_user, create_access_token
@@ -25,6 +25,7 @@ from .services.smartwork import generate_tips_for_all_workers
 # CREATE ALL DB TABLES ON STARTUP
 # ─────────────────────────────────────────────
 models.Base.metadata.create_all(bind=engine)
+apply_legacy_schema_patches()
 
 
 # ─────────────────────────────────────────────
