@@ -1,9 +1,17 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from datetime import date, timedelta
 from .. import models, crud, schemas
 from ..dependencies import get_db, get_current_user
 from ..services.risk import calculate_and_save_risk_score
-from ..services.premium import assign_zone, assign_tier, calculate_coverage, calculate_base_premium, calculate_final_premium
+from ..services.premium import (
+    assign_zone,
+    assign_tier,
+    calculate_coverage,
+    calculate_base_premium,
+    calculate_final_premium,
+    get_pricing_adjustments,
+)
 
 router = APIRouter(prefix="/workers", tags=["Workers"])
 
@@ -23,7 +31,7 @@ def create_profile(
         raise HTTPException(status_code=400, detail="Profile already exists")
 
     zone = assign_zone(current_user.region)
-    tier = assign_tier(current_user.income)
+    tier = assign_tier(avg_weekly_hours)
 
     avg_daily  = round(current_user.income / 6, 2)  # assuming 6 working days
     coverage   = calculate_coverage(current_user.income)
@@ -46,7 +54,21 @@ def create_profile(
 
     # Risk score calculation depends on profile fields, so calculate after profile exists.
     risk = calculate_and_save_risk_score(db, current_user.id)
-    final_premium = calculate_final_premium(base_premium, risk.multiplier)
+    has_no_claims = True
+    safe_worker = False
+    loadings, discounts = get_pricing_adjustments(
+        is_multi_platform=is_multi_platform,
+        risk_category=risk.risk_category,
+        pincode=pincode,
+        has_no_claims=has_no_claims,
+        safe_worker=safe_worker,
+    )
+    final_premium = calculate_final_premium(
+        base_premium,
+        risk.multiplier,
+        applied_loadings=loadings,
+        applied_discounts=discounts,
+    )
     profile = crud.update_worker_profile(db, current_user.id, weekly_premium=final_premium)
 
     return profile
@@ -72,6 +94,38 @@ def update_profile(
     profile = crud.update_worker_profile(db, current_user.id, **updates.model_dump(exclude_none=True))
     if not profile:
         raise HTTPException(status_code=404, detail="Profile not found")
+
+    weekly_income = profile.avg_weekly_income
+    coverage = calculate_coverage(weekly_income)
+    avg_daily_income = round(weekly_income / 6, 2)
+    profile = crud.update_worker_profile(
+        db,
+        current_user.id,
+        weekly_coverage=coverage,
+        avg_daily_income=avg_daily_income,
+    )
+
+    # Keep pricing in sync whenever profile risk inputs change.
+    risk = calculate_and_save_risk_score(db, current_user.id)
+    six_months_ago = date.today() - timedelta(days=180)
+    has_no_claims = crud.count_closed_claims_since(db, current_user.id, six_months_ago) == 0
+    latest_tip = crud.get_latest_smartwork_tip(db, current_user.id)
+    safe_worker = bool(latest_tip and latest_tip.followed_safety_tips)
+    base_premium = calculate_base_premium(coverage, profile.zone.value)
+    loadings, discounts = get_pricing_adjustments(
+        is_multi_platform=profile.is_multi_platform,
+        risk_category=risk.risk_category,
+        pincode=profile.pincode,
+        has_no_claims=has_no_claims,
+        safe_worker=safe_worker,
+    )
+    final_premium = calculate_final_premium(
+        base_premium,
+        risk.multiplier,
+        applied_loadings=loadings,
+        applied_discounts=discounts,
+    )
+    profile = crud.update_worker_profile(db, current_user.id, weekly_premium=final_premium)
     return profile
 
 

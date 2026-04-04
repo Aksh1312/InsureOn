@@ -9,6 +9,7 @@ import Pricing from './pages/public/Pricing';
 import SmartWork from './pages/public/SmartWork';
 import Login from './pages/public/Login';
 import Signup from './pages/public/Signup';
+import SignupDetails from './pages/public/SignupDetails';
 
 // Dashboard
 import DashboardSidebar from './components/DashboardSidebar';
@@ -46,6 +47,7 @@ function App() {
       <Route path="/smartwork" element={<SmartWork />} />
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
+      <Route path="/signup/details" element={<SignupDetails />} />
 
       <Route path="/dashboard" element={<ProtectedRoute><Overview /></ProtectedRoute>} />
       <Route path="/dashboard/claims" element={<ProtectedRoute><Claims /></ProtectedRoute>} />

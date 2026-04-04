@@ -5,6 +5,7 @@ export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [token, setToken] = useState(() => localStorage.getItem('token'));
   const [loading, setLoading] = useState(true);
 
   const fetchUser = async () => {
@@ -13,6 +14,7 @@ export const AuthProvider = ({ children }) => {
       setUser(response.data);
     } catch (error) {
       setUser(null);
+      setToken(null);
       localStorage.removeItem('token');
     } finally {
       setLoading(false);
@@ -20,13 +22,12 @@ export const AuthProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
     if (token) {
       fetchUser();
     } else {
       setLoading(false);
     }
-  }, []);
+  }, [token]);
 
   const login = async (email, password) => {
     // FastAPI requires form data for login
@@ -41,6 +42,7 @@ export const AuthProvider = ({ children }) => {
     });
     
     if (response.data.access_token) {
+      setToken(response.data.access_token);
       localStorage.setItem('token', response.data.access_token);
       await fetchUser();
     }
@@ -49,16 +51,25 @@ export const AuthProvider = ({ children }) => {
 
   const signup = async (userData) => {
     const response = await api.post('/signup', userData);
+
+    if (response.data.access_token) {
+      setToken(response.data.access_token);
+      localStorage.setItem('token', response.data.access_token);
+
+      await fetchUser();
+    }
+
     return response.data;
   };
 
   const logout = () => {
+    setToken(null);
     localStorage.removeItem('token');
     setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, signup, logout, loading, fetchUser }}>
+    <AuthContext.Provider value={{ user, token, login, signup, logout, loading, fetchUser }}>
       {children}
     </AuthContext.Provider>
   );

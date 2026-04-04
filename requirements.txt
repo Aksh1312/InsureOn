@@ -10,3 +10,4 @@ email-validator
 APScheduler
 httpx
 psycopg2-binary
+aiofiles

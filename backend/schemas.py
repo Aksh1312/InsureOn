@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict, EmailStr, field_validator
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 from typing import Optional
 from datetime import date, datetime
 from .models import (
@@ -12,6 +12,7 @@ from .models import (
 # ─────────────────────────────────────────────
 
 class SignupRequest(BaseModel):
+    full_name: Optional[str] = None
     email: EmailStr
     password: str
     platform: PlatformEnum
@@ -19,11 +20,22 @@ class SignupRequest(BaseModel):
     income: int           # weekly income in ₹
     pincode: str
     upi_id: str
+    avg_weekly_hours: Optional[float] = 22.0
+    primary_shift: Optional[WorkShiftEnum] = WorkShiftEnum.AFTERNOON
+    is_multi_platform: Optional[bool] = False
 
     @field_validator("income")
     def income_must_be_positive(cls, v):
         if v < 1500:
             raise ValueError("Weekly income must be at least ₹1,500")
+        return v
+
+    @field_validator("avg_weekly_hours")
+    def weekly_hours_must_be_positive(cls, v):
+        if v is None:
+            return 22.0
+        if v <= 0:
+            raise ValueError("Average weekly hours must be positive")
         return v
 
 class LoginRequest(BaseModel):
@@ -34,8 +46,16 @@ class TokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
 
+
+class OnboardingOptionsOut(BaseModel):
+    platforms: list[str]
+    shifts: list[str]
+    zone_cities: dict[str, list[str]]
+    zone_rates: dict[str, float]
+
 class UserOut(BaseModel):
     id: int
+    full_name: Optional[str] = None
     email: str
     platform: PlatformEnum
     region: str
@@ -110,6 +130,35 @@ class PolicyOut(BaseModel):
     is_paid: bool
     is_active: bool
     created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class PremiumBreakdownOut(BaseModel):
+    zone: str
+    tier: str
+    avg_weekly_hours: float
+    avg_weekly_income: float
+    weekly_coverage: float
+    base_premium: float
+    risk_multiplier: float
+    weekly_premium: float
+    applied_loadings: list[str] = Field(default_factory=list)
+    applied_discounts: list[str] = Field(default_factory=list)
+
+
+class DashboardSummaryOut(BaseModel):
+    user: UserOut
+    profile: Optional["WorkerProfileOut"] = None
+    risk_score: Optional["RiskScoreOut"] = None
+    smartwork_tip: Optional["SmartWorkTipOut"] = None
+    active_policy: Optional["PolicyOut"] = None
+    policy_history: list["PolicyOut"] = Field(default_factory=list)
+    active_claim: Optional["ClaimOut"] = None
+    claim_history: list["ClaimOut"] = Field(default_factory=list)
+    income_logs: list["DailyIncomeLogOut"] = Field(default_factory=list)
+    payout_history: list["PayoutOut"] = Field(default_factory=list)
+    premium_breakdown: Optional["PremiumBreakdownOut"] = None
 
     model_config = ConfigDict(from_attributes=True)
 

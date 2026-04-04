@@ -247,6 +247,13 @@ def get_claims_by_user(db: Session, user_id: int) -> list:
         models.Claim.user_id == user_id
     ).order_by(desc(models.Claim.created_at)).all()
 
+def count_closed_claims_since(db: Session, user_id: int, since_date: date) -> int:
+    return db.query(models.Claim).filter(
+        models.Claim.user_id == user_id,
+        models.Claim.status == models.ClaimStatusEnum.CLOSED,
+        models.Claim.created_at >= datetime.combine(since_date, datetime.min.time()),
+    ).count()
+
 def increment_loss_counter(db: Session, claim_id: int) -> Optional[models.Claim]:
     claim = get_claim_by_id(db, claim_id)
     if claim:
