@@ -83,12 +83,13 @@ with httpx.Client(base_url=SIM_URL.rstrip("/"), timeout=TIMEOUT) as client:
         totals["backend_active"] = result["backend_active_claims"]
 
     print("-" * 103)
-    print(
-        f"TOT | {totals['sim_claims']:>9} | {totals['legit']:>5} | "
-        f"{totals['fraud']:>5} | {totals['backend_triggers']:>15} | "
-        f"{totals['backend_opened']:>13} | {totals['backend_processed']:>16} | "
-        f"{totals['backend_active']:>13}"
-    )
+    print(f"Total sim claims: {totals['sim_claims']}")
+    print(f"Total legitimate: {totals['legit']}")
+    print(f"Total fraudulent: {totals['fraud']}")
+    print(f"Total backend triggers: {totals['backend_triggers']}")
+    print(f"Total backend opened: {totals['backend_opened']}")
+    print(f"Total backend processed: {totals['backend_processed']}")
+    print(f"Total backend active: {totals['backend_active']}")
 
     audit = _request(client, "GET", "/backend/fraud_audit")
     print("")
@@ -100,3 +101,17 @@ with httpx.Client(base_url=SIM_URL.rstrip("/"), timeout=TIMEOUT) as client:
     print(f"Rejected claims: {audit['rejected_claims']}")
     print(f"Flagged and rejected: {audit['flagged_and_rejected']}")
     print(f"Flagged rejection rate: {audit['flagged_rejection_rate']}%")
+
+    accuracy = _request(client, "GET", "/backend/fraud_accuracy")
+    print("")
+    print("=== Backend Fraud Accuracy (Worker-Level) ===")
+    print(f"Workers checked: {accuracy['workers_checked']}")
+    print(f"Sim fraud workers: {accuracy['sim_fraud_workers']}")
+    print(f"Sim legit workers: {accuracy['sim_legit_workers']}")
+    print(f"Backend flagged workers: {accuracy['backend_flagged_workers']}")
+    print(f"True positives: {accuracy['true_positive']}")
+    print(f"False positives: {accuracy['false_positive']}")
+    print(f"False negatives: {accuracy['false_negative']}")
+    print(f"True negatives: {accuracy['true_negative']}")
+    print(f"Precision: {accuracy['precision']}")
+    print(f"Recall: {accuracy['recall']}")

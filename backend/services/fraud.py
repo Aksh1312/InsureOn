@@ -5,10 +5,10 @@ All 8 layers feed into a logistic regression score.
 Graph-based fraud ring detection runs in parallel.
 
 Decision thresholds:
-  0.00–0.20 → auto_approve
-  0.20–0.50 → fast_review
-  0.50–0.80 → manual
-  0.80–1.00 → reject
+    0.00–0.25 → auto_approve
+    0.25–0.60 → fast_review
+    0.60–0.85 → manual
+    0.85–1.00 → reject
 """
 
 from datetime import date, datetime, timedelta
@@ -25,13 +25,13 @@ def _sigmoid(x: float) -> float:
 
 # ── Layer weights for logistic regression ──
 LAYER_WEIGHTS = {
-    "w1_worker_history":      0.30,
+    "w1_worker_history":      0.35,
     "w2_event_verification":  0.20,
-    "w3_zone_pattern":        0.20,
-    "w4_neighboring_zone":    0.15,
-    "w5_behavioral_deviation":0.15,
+    "w3_zone_pattern":        0.15,
+    "w4_neighboring_zone":    0.10,
+    "w5_behavioral_deviation":0.20,
 }
-BIAS = -1.5  # calibrated to produce ~0.1 score for clean claims
+BIAS = -1.85  # calibrated to keep clean claims below fast_review
 
 
 def layer_1_event_verification(db: Session, claim: models.Claim) -> float:
@@ -134,20 +134,20 @@ def layer_4_platform_activity(db: Session, claim: models.Claim) -> float:
     logs = crud.get_income_logs_for_claim(db, claim.id)
 
     if not logs:
-        return 0.3  # no data yet — mild suspicion
+        return 0.2  # no data yet — mild suspicion
 
     # Check if inactivity started exactly on day claim was opened
     first_log = logs[0]
     if first_log.log_date == claim.monitoring_start and not first_log.platform_logged_in:
         # Wasn't logged in from day 1 — suspicious
-        return 0.7
+        return 0.5
 
     # If logged in but earning 0 — scenario C (manual review territory)
     zero_earning_but_logged_in = [
         l for l in logs if l.income_earned == 0 and l.platform_logged_in
     ]
     if len(zero_earning_but_logged_in) >= 2:
-        return 0.6
+        return 0.5
 
     return 0.1
 
@@ -164,7 +164,7 @@ def layer_5_income_pattern(db: Session, claim: models.Claim) -> float:
 
     # Check if income went to 0 instantly on day 1
     if logs[0].income_earned == 0:
-        return 0.6  # instant zero — suspicious
+        return 0.55  # instant zero — suspicious
 
     # Check if drop was gradual
     incomes = [l.income_earned for l in logs]
@@ -202,14 +202,14 @@ def layer_6_zone_correlation(db: Session, claim: models.Claim) -> float:
 
     claim_rate = zone_claims / zone_workers
 
-    if claim_rate >= 0.30:
+    if claim_rate >= 0.20:
         return 0.0   # 30%+ of zone affected — genuine
-    elif claim_rate >= 0.10:
+    elif claim_rate >= 0.08:
         return 0.2
-    elif claim_rate >= 0.03:
-        return 0.5
+    elif claim_rate >= 0.02:
+        return 0.4
     else:
-        return 0.8   # lone claimant — suspicious
+        return 0.6   # lone claimant — suspicious
 
 
 def layer_7_neighboring_zone(db: Session, claim: models.Claim) -> float:
@@ -234,12 +234,12 @@ def layer_7_neighboring_zone(db: Session, claim: models.Claim) -> float:
         ).count()
         neighbor_claim_count += count
 
-    if neighbor_claim_count >= 5:
+    if neighbor_claim_count >= 4:
         return 0.0   # neighboring zones also affected — genuine
     elif neighbor_claim_count >= 2:
         return 0.2
     else:
-        return 0.6   # isolated zone — suspicious
+        return 0.4   # isolated zone — suspicious
 
 
 def layer_8_behavioral_deviation(db: Session, claim: models.Claim) -> float:
@@ -304,7 +304,7 @@ def _compute_fraud_probability(layer_scores: dict) -> float:
     """
     # Aggregate 8 layers into 5 feature groups
     w1 = (layer_scores["l3"] + layer_scores["l4"]) / 2   # worker history
-    w2 = layer_scores["l1"]                               # event verification
+    w2 = (layer_scores["l1"] + layer_scores["l2"]) / 2   # event + weather baseline
     w3 = layer_scores["l6"]                               # zone pattern
     w4 = layer_scores["l7"]                               # neighboring zone
     w5 = (layer_scores["l5"] + layer_scores["l8"]) / 2   # behavioral deviation
@@ -367,11 +367,11 @@ def _compute_cluster_risk(db: Session, claim: models.Claim) -> float:
 
 
 def _get_decision(fraud_prob: float) -> str:
-    if fraud_prob < 0.20:
+    if fraud_prob < 0.25:
         return "auto_approve"
-    elif fraud_prob < 0.50:
+    elif fraud_prob < 0.60:
         return "fast_review"
-    elif fraud_prob < 0.70:
+    elif fraud_prob < 0.85:
         return "manual"
     else:
         return "reject"
