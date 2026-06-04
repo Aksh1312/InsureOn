@@ -3,6 +3,8 @@ from sqlalchemy import desc
 from datetime import date, datetime, timedelta
 from typing import Optional
 from . import models
+from .services.audit import audit_transition, audit_error
+from .services.state_machine import validate_transition, is_terminal, can_monitor
 
 
 # ─────────────────────────────────────────────
@@ -171,6 +173,15 @@ def mark_policy_paid(db: Session, policy_id: int) -> Optional[models.Policy]:
         policy.is_paid = True
         db.commit()
         db.refresh(policy)
+        create_transaction(
+            db=db,
+            user_id=policy.user_id,
+            transaction_type=models.TransactionType.PREMIUM_PAYMENT,
+            amount=policy.weekly_premium,
+            status=models.TransactionStatus.SUCCESS,
+            reference_id=f"policy_{policy.id}",
+            description=f"Weekly premium payment for policy #{policy.id}",
+        )
     return policy
 
 def get_policy_history(db: Session, user_id: int) -> list:
@@ -219,7 +230,19 @@ def create_claim(
     user_id: int,
     policy_id: int,
     trigger_event_id: int,
-) -> models.Claim:
+) -> Optional[models.Claim]:
+    print(f"[TRACE create_claim] user_id={user_id} policy_id={policy_id} trigger_event_id={trigger_event_id} date.today()={date.today()}")
+    existing_active = db.query(models.Claim).filter(
+        models.Claim.user_id == user_id,
+        models.Claim.status.in_([
+            models.ClaimStatusEnum.MONITORING,
+            models.ClaimStatusEnum.PAYOUT_READY,
+        ])
+    ).first()
+    print(f"[TRACE create_claim] existing_active_check: {existing_active}")
+    if existing_active:
+        print(f"[TRACE create_claim] BLOCKED: claim id={existing_active.id} status={existing_active.status} monitoring_start={existing_active.monitoring_start}")
+        return None
     claim = models.Claim(
         user_id=user_id,
         policy_id=policy_id,
@@ -231,6 +254,7 @@ def create_claim(
     db.add(claim)
     db.commit()
     db.refresh(claim)
+    print(f"[TRACE create_claim] SUCCESS: claim id={claim.id} status={claim.status} monitoring_start={claim.monitoring_start}")
     return claim
 
 def get_active_claim(db: Session, user_id: int) -> Optional[models.Claim]:
@@ -256,16 +280,22 @@ def count_closed_claims_since(db: Session, user_id: int, since_date: date) -> in
 
 def increment_loss_counter(db: Session, claim_id: int) -> Optional[models.Claim]:
     claim = get_claim_by_id(db, claim_id)
-    if claim:
-        claim.loss_counter += 1
-        if claim.loss_counter >= 5:
+    if not claim:
+        return None
+    if is_terminal(claim.status):
+        audit_error("increment_loss_counter", ValueError(f"Claim {claim_id} is in terminal state {claim.status}"), claim_id=claim_id)
+        return claim
+    claim.loss_counter += 1
+    if claim.loss_counter >= 5:
+        from_status = claim.status
+        if validate_transition(from_status, models.ClaimStatusEnum.PAYOUT_READY):
             claim.status = models.ClaimStatusEnum.PAYOUT_READY
             claim.days_of_loss = claim.loss_counter
-            # 5 days → 70%, 6 days → 85%, 7 days → 100%
             pct_map = {5: 70.0, 6: 85.0, 7: 100.0}
             claim.payout_percentage = pct_map.get(min(claim.loss_counter, 7), 100.0)
-        db.commit()
-        db.refresh(claim)
+            audit_transition(claim_id, from_status.value if hasattr(from_status, 'value') else str(from_status), "payout_ready", reason="5+ loss days", worker_id=claim.user_id)
+    db.commit()
+    db.refresh(claim)
     return claim
 
 def reset_loss_counter(db: Session, claim_id: int) -> Optional[models.Claim]:
@@ -280,16 +310,30 @@ def update_claim_status(
     db: Session, claim_id: int, status: models.ClaimStatusEnum
 ) -> Optional[models.Claim]:
     claim = get_claim_by_id(db, claim_id)
-    if claim:
-        claim.status = status
-        if status in (
-            models.ClaimStatusEnum.CLOSED,
-            models.ClaimStatusEnum.REJECTED,
-            models.ClaimStatusEnum.MANUAL_REVIEW,
-        ):
-            claim.monitoring_end = date.today()
-        db.commit()
-        db.refresh(claim)
+    if not claim:
+        return None
+    from_status = claim.status
+    if from_status == status:
+        return claim
+    if not validate_transition(from_status, status):
+        audit_error("update_claim_status", ValueError(f"Invalid transition {from_status} -> {status} for claim {claim_id}"), claim_id=claim_id)
+        return claim
+    claim.status = status
+    if status in (
+        models.ClaimStatusEnum.CLOSED,
+        models.ClaimStatusEnum.REJECTED,
+        models.ClaimStatusEnum.MANUAL_REVIEW,
+    ):
+        claim.monitoring_end = date.today()
+    db.commit()
+    db.refresh(claim)
+    audit_transition(
+        claim_id,
+        from_status.value if hasattr(from_status, 'value') else str(from_status),
+        status.value if hasattr(status, 'value') else str(status),
+        reason="api_update",
+        worker_id=claim.user_id,
+    )
     return claim
 
 
@@ -341,7 +385,11 @@ def create_payout(
     alert_level: str,
     days_of_loss: int,
     payout_percentage: float,
-) -> models.Payout:
+) -> Optional[models.Payout]:
+    existing = get_payout_by_claim(db, claim_id)
+    if existing:
+        audit_error("create_payout", ValueError(f"Payout already exists for claim {claim_id}"), claim_id=claim_id, worker_id=user_id)
+        return existing
     payout = models.Payout(
         claim_id=claim_id,
         user_id=user_id,
@@ -355,6 +403,15 @@ def create_payout(
     db.add(payout)
     db.commit()
     db.refresh(payout)
+    create_transaction(
+        db=db,
+        user_id=user_id,
+        transaction_type=models.TransactionType.CLAIM_PAYOUT,
+        amount=amount,
+        status=models.TransactionStatus.PENDING,
+        reference_id=f"claim_{claim_id}",
+        description=f"Claim payout for claim #{claim_id}",
+    )
     return payout
 
 def mark_payout_sent(
@@ -380,6 +437,13 @@ def get_payout_by_claim(db: Session, claim_id: int) -> Optional[models.Payout]:
 # ─────────────────────────────────────────────
 
 def create_fraud_signal(db: Session, claim_id: int, user_id: int, **kwargs) -> models.FraudSignal:
+    existing = get_fraud_signal_by_claim(db, claim_id)
+    if existing:
+        for key, value in kwargs.items():
+            setattr(existing, key, value)
+        db.commit()
+        db.refresh(existing)
+        return existing
     signal = models.FraudSignal(claim_id=claim_id, user_id=user_id, **kwargs)
     db.add(signal)
     db.commit()
@@ -406,6 +470,11 @@ def create_smartwork_tip(
     surge_alerts: str,
     risk_advisory: str,
     projected_earnings: float,
+    recommended_slots: Optional[str] = None,
+    risk_outlook: Optional[str] = None,
+    premium_projection: Optional[str] = None,
+    city_insights: Optional[str] = None,
+    confidence_score: Optional[float] = None,
 ) -> models.SmartWorkTip:
     tip = models.SmartWorkTip(
         user_id=user_id,
@@ -416,6 +485,11 @@ def create_smartwork_tip(
         surge_alerts=surge_alerts,
         risk_advisory=risk_advisory,
         projected_earnings=projected_earnings,
+        recommended_slots=recommended_slots,
+        risk_outlook=risk_outlook,
+        premium_projection=premium_projection,
+        city_insights=city_insights,
+        confidence_score=confidence_score,
     )
     db.add(tip)
     db.commit()
@@ -425,7 +499,7 @@ def create_smartwork_tip(
 def get_latest_smartwork_tip(db: Session, user_id: int) -> Optional[models.SmartWorkTip]:
     return db.query(models.SmartWorkTip).filter(
         models.SmartWorkTip.user_id == user_id
-    ).order_by(desc(models.SmartWorkTip.week_start_date)).first()
+    ).order_by(desc(models.SmartWorkTip.created_at)).first()
 
 def update_smartwork_actuals(
     db: Session, tip_id: int, actual_earnings: float, followed_safety_tips: bool
@@ -437,3 +511,45 @@ def update_smartwork_actuals(
         db.commit()
         db.refresh(tip)
     return tip
+
+
+# ─────────────────────────────────────────────
+# TRANSACTIONS (Wallet Ledger)
+# ─────────────────────────────────────────────
+
+def create_transaction(
+    db: Session,
+    user_id: int,
+    transaction_type: models.TransactionType,
+    amount: float,
+    status: models.TransactionStatus = models.TransactionStatus.SUCCESS,
+    reference_id: Optional[str] = None,
+    description: Optional[str] = None,
+) -> models.Transaction:
+    txn = models.Transaction(
+        user_id=user_id,
+        transaction_type=transaction_type,
+        amount=amount,
+        status=status,
+        reference_id=reference_id,
+        description=description,
+    )
+    db.add(txn)
+    db.commit()
+    db.refresh(txn)
+    return txn
+
+
+def get_transactions(
+    db: Session,
+    user_id: int,
+    transaction_type: Optional[str] = None,
+    limit: int = 100,
+    offset: int = 0,
+) -> list[models.Transaction]:
+    q = db.query(models.Transaction).filter(
+        models.Transaction.user_id == user_id
+    )
+    if transaction_type:
+        q = q.filter(models.Transaction.transaction_type == transaction_type)
+    return q.order_by(desc(models.Transaction.created_at)).offset(offset).limit(limit).all()

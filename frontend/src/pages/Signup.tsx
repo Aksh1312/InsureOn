@@ -26,11 +26,10 @@ export default function Signup() {
     password: '',
     platform: 'swiggy',
     region: '',
-    income: 4000,
+    income: 5000,
     pincode: '',
     upi_id: '',
-    avg_weekly_hours: 22,
-    primary_shift: 'afternoon',
+    avg_weekly_hours: 30,
     is_multi_platform: false,
   })
 
@@ -55,7 +54,11 @@ export default function Signup() {
         income: Number(form.income),
         avg_weekly_hours: Number(form.avg_weekly_hours),
       })
-      navigate('/app')
+      if (form.email.toLowerCase().includes('admin')) {
+        navigate('/admin')
+      } else {
+        navigate('/app')
+      }
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Please try again.')
     } finally {
@@ -66,53 +69,54 @@ export default function Signup() {
   return (
     <Flex minH="100vh" align="center" justify="center" px={4}>
       <Box
-        bg="white"
+        bg="bg-surface"
         p={{ base: 6, md: 10 }}
         borderRadius="32px"
         borderWidth="1px"
-        borderColor="blackAlpha.200"
+        borderColor="border-light"
         boxShadow="lg"
         w="full"
         maxW="520px"
       >
-        <Heading fontSize="2xl" color="ink.900">
-          Create your worker account
+        <Heading fontSize="2xl" color="text-primary">
+          Create account
         </Heading>
-        <Text mt={2} color="ink.600">
-          Set your platform details and get weekly coverage right away.
+        <Text mt={2} color="text-secondary">
+           Set up your profile to get covered.
         </Text>
-        <Box mt={4} bg="ink.50" borderRadius="16px" px={4} py={3} borderWidth="1px" borderColor="blackAlpha.100">
-          <Text fontSize="sm" color="ink.700">
-            Testing login: worker7@sim.insureon.dev
+        <Box mt={4} bg="bg-surface-muted" borderRadius="16px" px={4} py={3} borderWidth="1px" borderColor="border-muted">
+          <Text fontSize="sm" color="text-secondary">
+            Use this test email: worker7@sim.insureon.dev.
           </Text>
-          <Text fontSize="sm" color="ink.700">
-            Password: sim-worker-7-pass
+          <Text fontSize="sm" color="text-secondary">
+            Use the password sim-worker-7-pass.
           </Text>
         </Box>
         <Stack mt={6} as="form" gap={4} onSubmit={handleSubmit}>
           <Box>
-            <Text fontSize="sm" fontWeight={600} color="ink.700">
+            <Text fontSize="sm" fontWeight={600} color="text-secondary">
               Full name
             </Text>
-            <Input mt={2} value={form.full_name} onChange={(e) => handleChange('full_name', e.target.value)} />
+            <Input required mt={2} value={form.full_name} onChange={(e) => handleChange('full_name', e.target.value)} />
           </Box>
           <Box>
-            <Text fontSize="sm" fontWeight={600} color="ink.700">
+            <Text fontSize="sm" fontWeight={600} color="text-secondary">
               Email
             </Text>
-            <Input mt={2} value={form.email} onChange={(e) => handleChange('email', e.target.value)} type="email" />
+            <Input required mt={2} value={form.email} onChange={(e) => handleChange('email', e.target.value)} type="email" />
           </Box>
           <Box>
-            <Text fontSize="sm" fontWeight={600} color="ink.700">
+            <Text fontSize="sm" fontWeight={600} color="text-secondary">
               Password
             </Text>
-            <Input mt={2} value={form.password} onChange={(e) => handleChange('password', e.target.value)} type="password" />
+            <Input required mt={2} value={form.password} onChange={(e) => handleChange('password', e.target.value)} type="password" />
           </Box>
           <Box>
-            <Text fontSize="sm" fontWeight={600} color="ink.700">
-              Platform
+            <Text fontSize="sm" fontWeight={600} color="text-secondary">
+              Delivery App
             </Text>
             <Input
+              required
               as="select"
               mt={2}
               value={form.platform}
@@ -126,17 +130,24 @@ export default function Signup() {
             </Input>
           </Box>
           <Box>
-            <Text fontSize="sm" fontWeight={600} color="ink.700">
-              Region (City)
+            <Text fontSize="sm" fontWeight={600} color="text-secondary">
+              Your City
             </Text>
-            <Input mt={2} value={form.region} onChange={(e) => handleChange('region', e.target.value)} />
+            <Text fontSize="sm" color="text-secondary" mb={1}>
+              Type your city name
+            </Text>
+            <Input required mt={1} value={form.region} onChange={(e) => handleChange('region', e.target.value)} placeholder="e.g., mumbai" />
           </Box>
           <Box>
-            <Text fontSize="sm" fontWeight={600} color="ink.700">
-              Weekly income (INR)
+            <Text fontSize="sm" fontWeight={600} color="text-secondary">
+              Weekly earnings (₹)
+            </Text>
+            <Text fontSize="sm" color="text-secondary" mb={1}>
+              Your weekly earnings from deliveries
             </Text>
             <Input
-              mt={2}
+              required
+              mt={1}
               value={form.income}
               onChange={(e) => handleChange('income', Number(e.target.value))}
               type="number"
@@ -144,45 +155,32 @@ export default function Signup() {
             />
           </Box>
           <Box>
-            <Text fontSize="sm" fontWeight={600} color="ink.700">
+            <Text fontSize="sm" fontWeight={600} color="text-secondary">
               Pincode
             </Text>
-            <Input mt={2} value={form.pincode} onChange={(e) => handleChange('pincode', e.target.value)} />
+            <Input required mt={2} value={form.pincode} onChange={(e) => handleChange('pincode', e.target.value)} />
           </Box>
           <Box>
-            <Text fontSize="sm" fontWeight={600} color="ink.700">
+            <Text fontSize="sm" fontWeight={600} color="text-secondary">
               UPI ID
             </Text>
-            <Input mt={2} value={form.upi_id} onChange={(e) => handleChange('upi_id', e.target.value)} />
+            <Input required mt={2} value={form.upi_id} onChange={(e) => handleChange('upi_id', e.target.value)} />
           </Box>
           <Box>
-            <Text fontSize="sm" fontWeight={600} color="ink.700">
-              Average weekly hours
+            <Text fontSize="sm" fontWeight={600} color="text-secondary">
+              Weekly work hours
+            </Text>
+            <Text fontSize="sm" color="text-secondary" mb={1}>
+              Total hours you work each week
             </Text>
             <Input
-              mt={2}
+              required
+              mt={1}
               value={form.avg_weekly_hours}
               onChange={(e) => handleChange('avg_weekly_hours', Number(e.target.value))}
               type="number"
               min={1}
             />
-          </Box>
-          <Box>
-            <Text fontSize="sm" fontWeight={600} color="ink.700">
-              Primary shift
-            </Text>
-            <Input
-              as="select"
-              mt={2}
-              value={form.primary_shift}
-              onChange={(e) => handleChange('primary_shift', e.target.value)}
-            >
-              {(options?.shifts || ['morning', 'afternoon', 'night']).map((item) => (
-                <option key={item} value={item}>
-                  {item}
-                </option>
-              ))}
-            </Input>
           </Box>
           <Box display="flex" alignItems="center" gap={2}>
             <input
@@ -190,8 +188,8 @@ export default function Signup() {
               checked={form.is_multi_platform}
               onChange={(e) => handleChange('is_multi_platform', e.target.checked)}
             />
-            <Text fontSize="sm" color="ink.700">
-              I work across multiple platforms
+            <Text fontSize="sm" color="text-secondary">
+              Work on multiple apps
             </Text>
           </Box>
           {error ? (

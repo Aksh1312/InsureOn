@@ -4,10 +4,10 @@ import { Link as RouterLink } from 'react-router-dom'
 export default function NotFound() {
   return (
     <Box textAlign="center" py={20}>
-      <Heading fontSize="4xl" color="ink.900">
+      <Heading fontSize="4xl" color="text-primary">
         404
       </Heading>
-      <Text mt={3} color="ink.600">
+      <Text mt={3} color="text-secondary">
         This page does not exist yet.
       </Text>
       <Button as={RouterLink} to="/" mt={6}>

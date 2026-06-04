@@ -17,6 +17,8 @@ from collections import defaultdict
 import math
 from .. import models
 from .. import crud
+from .audit import audit_fraud, audit_error, audit_transition
+from .state_machine import validate_transition, is_terminal
 
 
 def _sigmoid(x: float) -> float:
@@ -383,6 +385,11 @@ def evaluate_claim(db: Session, claim: models.Claim) -> models.FraudSignal:
     or at any point during monitoring.
     Runs all 8 layers, computes fraud probability, saves FraudSignal.
     """
+    if is_terminal(claim.status):
+        existing = crud.get_fraud_signal_by_claim(db, claim.id)
+        if existing:
+            return existing
+
     l1 = layer_1_event_verification(db, claim)
     l2 = layer_2_weather_baseline(db, claim)
     l3 = layer_3_worker_behaviour(db, claim.user_id)
@@ -397,16 +404,16 @@ def evaluate_claim(db: Session, claim: models.Claim) -> models.FraudSignal:
     is_ring       = cluster_risk >= 0.6
     decision      = _get_decision(fraud_prob)
 
-    # Update claim fraud fields
     claim.fraud_probability = fraud_prob
     claim.is_fraud_flagged  = (decision in ("manual", "reject")) or is_ring
-    if decision == "reject":
-        claim.status = models.ClaimStatusEnum.REJECTED
-        claim.monitoring_end = date.today()
-    elif claim.is_fraud_flagged:
-        claim.status = models.ClaimStatusEnum.MANUAL_REVIEW
-        claim.monitoring_end = date.today()
     db.commit()
+
+    if decision == "reject":
+        crud.update_claim_status(db, claim.id, models.ClaimStatusEnum.REJECTED)
+    elif claim.is_fraud_flagged:
+        crud.update_claim_status(db, claim.id, models.ClaimStatusEnum.MANUAL_REVIEW)
+
+    audit_fraud(claim.id, fraud_prob, decision, worker_id=claim.user_id)
 
     signal = crud.create_fraud_signal(
         db=db,

@@ -2,7 +2,7 @@ import { extendTheme, type ThemeConfig } from '@chakra-ui/react'
 
 const config: ThemeConfig = {
   initialColorMode: 'light',
-  useSystemColorMode: false,
+  useSystemColorMode: true,
 }
 
 const theme = extendTheme({
@@ -49,11 +49,23 @@ const theme = extendTheme({
       900: '#052c30',
     },
   },
+  semanticTokens: {
+    colors: {
+      'bg-body': { _light: 'ink.50', _dark: 'gray.800' },
+      'bg-surface': { _light: 'white', _dark: 'gray.700' },
+      'bg-surface-muted': { _light: 'ink.50', _dark: 'gray.600' },
+      'text-primary': { _light: 'ink.900', _dark: 'whiteAlpha.900' },
+      'text-secondary': { _light: 'ink.600', _dark: 'whiteAlpha.700' },
+      'text-muted': { _light: 'ink.400', _dark: 'whiteAlpha.500' },
+      'border-light': { _light: 'blackAlpha.200', _dark: 'whiteAlpha.200' },
+      'border-muted': { _light: 'blackAlpha.100', _dark: 'whiteAlpha.100' },
+    },
+  },
   styles: {
     global: {
       body: {
-        bg: 'ink.50',
-        color: 'ink.900',
+        bg: 'bg-body',
+        color: 'text-primary',
       },
     },
   },
@@ -70,6 +82,9 @@ const theme = extendTheme({
         outline: {
           borderRadius: '999px',
           fontWeight: 600,
+        },
+        ghost: {
+          borderRadius: '999px',
         },
       },
     },

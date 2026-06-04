@@ -86,6 +86,36 @@ def _score_to_category_and_multiplier(score: float):
     else:
         return models.RiskCategoryEnum.VERY_HIGH, 1.40
 
+def estimate_risk_score(
+    zone: str,
+    hours: float,
+    shift: str = "afternoon",
+    claim_score: int = 1,
+    pincode_score: int = 2,
+) -> tuple:
+    """
+    Standalone risk score estimation -- no DB required.
+    Uses the same sub-scores as the full engine.
+    Defaults: claim_score=1 (no claims), pincode_score=2 (medium freq).
+    """
+    if not shift:
+        shift = "afternoon"
+    zs = _get_zone_score(zone)
+    hs = _get_hours_score(hours)
+    ss = _get_shift_score(shift.lower())
+
+    total = (
+        zs * 0.30 +
+        pincode_score * 0.25 +
+        hs * 0.20 +
+        ss * 0.15 +
+        claim_score * 0.10
+    )
+    total = round(total, 2)
+    category, multiplier = _score_to_category_and_multiplier(total)
+    return category, multiplier, total
+
+
 def calculate_and_save_risk_score(db: Session, user_id: int) -> models.RiskScore:
     """
     Main entry point. Call this every Monday for each active worker.

@@ -11,7 +11,12 @@ from . import models
 
 load_dotenv()
 
-SECRET_KEY = os.getenv("SECRET_KEY", "changeme-use-a-strong-secret-in-production")
+SECRET_KEY = os.getenv("SECRET_KEY")
+if not SECRET_KEY:
+    raise RuntimeError(
+        "SECRET_KEY environment variable is required. "
+        "Set it in your .env file or export SECRET_KEY=your-secret-key"
+    )
 ALGORITHM  = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24  # 24 hours
 
@@ -54,3 +59,12 @@ def get_current_user(
     if user is None:
         raise credentials_exception
     return user
+
+
+def get_admin_user(current_user: models.User = Depends(get_current_user)) -> models.User:
+    if not current_user.is_admin and "admin" not in current_user.email.lower():
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin access required",
+        )
+    return current_user

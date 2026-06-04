@@ -4,12 +4,11 @@ import {
   Flex,
   Heading,
   Input,
-  Link,
   Stack,
   Text,
 } from '@chakra-ui/react'
 import { useState } from 'react'
-import { Link as RouterLink, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 
 export default function Login() {
@@ -24,6 +23,14 @@ export default function Login() {
     event.preventDefault()
     setIsSubmitting(true)
     setError(null)
+
+    // Separation check: Reject admins on worker portal
+    if (email.toLowerCase().includes('admin')) {
+      setError('Administrative account detected. Please sign in via the Administrative Portal (/admin-login).')
+      setIsSubmitting(false)
+      return
+    }
+
     try {
       await login(email, password)
       navigate('/app')
@@ -37,41 +44,33 @@ export default function Login() {
   return (
     <Flex minH="100vh" align="center" justify="center" px={4}>
       <Box
-        bg="white"
+        bg="bg-surface"
         p={{ base: 6, md: 10 }}
         borderRadius="32px"
         borderWidth="1px"
-        borderColor="blackAlpha.200"
+        borderColor="border-light"
         boxShadow="lg"
         w="full"
         maxW="420px"
       >
-        <Heading fontSize="2xl" color="ink.900">
-          Worker login
+        <Heading fontSize="2xl" color="text-primary">
+          Worker Login
         </Heading>
-        <Text mt={2} color="ink.600">
-          Access your weekly coverage, claims, and SmartWork tips.
+        <Text mt={2} color="text-secondary">
+           Your protection, requests, and tips.
         </Text>
-        <Box mt={4} bg="ink.50" borderRadius="16px" px={4} py={3} borderWidth="1px" borderColor="blackAlpha.100">
-          <Text fontSize="sm" color="ink.700">
-            Test account: worker7@sim.insureon.dev
-          </Text>
-          <Text fontSize="sm" color="ink.700">
-            Password: sim-worker-7-pass
-          </Text>
-        </Box>
         <Stack mt={6} as="form" gap={4} onSubmit={handleSubmit}>
           <Box>
-            <Text fontSize="sm" fontWeight={600} color="ink.700">
+            <Text fontSize="sm" fontWeight={600} color="text-secondary">
               Email
             </Text>
-            <Input mt={2} value={email} onChange={(e) => setEmail(e.target.value)} type="email" />
+            <Input required mt={2} value={email} onChange={(e) => setEmail(e.target.value)} type="email" />
           </Box>
           <Box>
-            <Text fontSize="sm" fontWeight={600} color="ink.700">
+            <Text fontSize="sm" fontWeight={600} color="text-secondary">
               Password
             </Text>
-            <Input mt={2} value={password} onChange={(e) => setPassword(e.target.value)} type="password" />
+            <Input required mt={2} value={password} onChange={(e) => setPassword(e.target.value)} type="password" />
           </Box>
           {error ? (
             <Text fontSize="sm" color="red.500">
@@ -82,12 +81,24 @@ export default function Login() {
             Sign in
           </Button>
         </Stack>
-        <Text mt={6} fontSize="sm" color="ink.500">
-          New to InsureOn?{' '}
-          <Link as={RouterLink} to="/signup" color="brand.600">
-            Create an account
-          </Link>
-        </Text>
+        
+        <Flex justify="space-between" mt={6} fontSize="sm">
+          <Text color="text-secondary">
+            New here?{' '}
+            <Text as="span" color="brand.600" fontWeight="600" cursor="pointer" onClick={() => navigate('/signup')} _hover={{ textDecoration: 'underline' }}>
+              Create account
+            </Text>
+          </Text>
+          <Text 
+            color="brand.600" 
+            fontWeight="600" 
+            cursor="pointer" 
+            onClick={() => navigate('/admin-login')} 
+            _hover={{ textDecoration: 'underline' }}
+          >
+            Admin Login
+          </Text>
+        </Flex>
       </Box>
     </Flex>
   )

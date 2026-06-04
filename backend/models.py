@@ -40,6 +40,7 @@ class PlatformEnum(str, enum.Enum):
     DUNZO   = "dunzo"
     BLINKIT = "blinkit"
     OTHER   = "other"
+    SYSTEM  = "system"
 
 class WorkShiftEnum(str, enum.Enum):
     MORNING   = "morning"
@@ -70,6 +71,7 @@ class User(Base):
     income           = Column(Integer, nullable=False)   # declared weekly income ₹
     upi_id           = Column(String, nullable=True)     # for payout disbursement
     is_active        = Column(Boolean, default=True)
+    is_admin         = Column(Boolean, default=False)       # admin access for operations dashboard
     created_at       = Column(DateTime(timezone=True), server_default=func.now())
 
     profile       = relationship("WorkerProfile",  back_populates="user", uselist=False)
@@ -186,12 +188,12 @@ class IMDTriggerEvent(Base):
     __tablename__ = "imd_trigger_events"
 
     id             = Column(Integer, primary_key=True, index=True)
-    district       = Column(String, nullable=False)
+    district       = Column(String, nullable=False, index=True)
     pincode        = Column(String(10), nullable=True)
-    alert_color    = Column(String(10), nullable=False)   # "RED" or "ORANGE"
+    alert_color    = Column(String(10), nullable=False)
     zone_triggered = Column(Enum(ZoneEnum), nullable=False)
-    triggered_at   = Column(DateTime(timezone=True), server_default=func.now())
-    is_deduplicated = Column(Boolean, default=False)      # one trigger per district per day
+    triggered_at   = Column(DateTime(timezone=True), server_default=func.now(), index=True)
+    is_deduplicated = Column(Boolean, default=False)
 
     # relationships
     claims = relationship("Claim", back_populates="trigger_event")
@@ -209,25 +211,23 @@ class Claim(Base):
     __tablename__ = "claims"
 
     id                  = Column(Integer, primary_key=True, index=True)
-    user_id             = Column(Integer, ForeignKey("users.id"), nullable=False)
+    user_id             = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
     policy_id           = Column(Integer, ForeignKey("policies.id"), nullable=False)
     trigger_event_id    = Column(Integer, ForeignKey("imd_trigger_events.id"), nullable=False)
 
-    status              = Column(Enum(ClaimStatusEnum), default=ClaimStatusEnum.MONITORING, nullable=False)
-    loss_counter        = Column(Integer, default=0)      # consecutive days below 50% baseline
-    monitoring_start    = Column(Date, nullable=False)    # day claim was opened
-    monitoring_end      = Column(Date, nullable=True)     # day claim was resolved
+    status              = Column(Enum(ClaimStatusEnum), default=ClaimStatusEnum.MONITORING, nullable=False, index=True)
+    loss_counter        = Column(Integer, default=0)
+    monitoring_start    = Column(Date, nullable=False, index=True)
+    monitoring_end      = Column(Date, nullable=True)
 
-    # Payout details (filled when status → payout_ready)
-    days_of_loss        = Column(Integer, nullable=True)  # 5, 6, or 7
-    payout_percentage   = Column(Float, nullable=True)    # 70%, 85%, or 100%
-    payout_amount       = Column(Float, nullable=True)    # ₹ final amount
+    days_of_loss        = Column(Integer, nullable=True)
+    payout_percentage   = Column(Float, nullable=True)
+    payout_amount       = Column(Float, nullable=True)
 
-    # Fraud flag from fraud detection engine
-    fraud_probability   = Column(Float, nullable=True)    # 0.0–1.0
-    is_fraud_flagged    = Column(Boolean, default=False)
+    fraud_probability   = Column(Float, nullable=True)
+    is_fraud_flagged    = Column(Boolean, default=False, index=True)
 
-    created_at          = Column(DateTime(timezone=True), server_default=func.now())
+    created_at          = Column(DateTime(timezone=True), server_default=func.now(), index=True)
     updated_at          = Column(DateTime(timezone=True), onupdate=func.now())
 
     # relationships
@@ -237,6 +237,32 @@ class Claim(Base):
     income_logs   = relationship("DailyIncomeLog", back_populates="claim")
     payout        = relationship("Payout",         back_populates="claim", uselist=False)
     fraud_signals = relationship("FraudSignal",    back_populates="claim")
+
+    @property
+    def alert_level(self) -> str:
+        return self.trigger_event.alert_color if self.trigger_event else "RED"
+
+    @property
+    def alert_name(self) -> str:
+        return f"{self.trigger_event.district} {self.trigger_event.alert_color} Alert" if self.trigger_event else "Weather Alert"
+
+    @property
+    def zone(self) -> str:
+        if self.policy and self.policy.zone:
+            return self.policy.zone.value if hasattr(self.policy.zone, 'value') else str(self.policy.zone)
+        return "A"
+
+    @property
+    def resolved(self) -> bool:
+        return self.status in [ClaimStatusEnum.CLOSED, ClaimStatusEnum.REJECTED]
+
+    @property
+    def claim_amount(self) -> float:
+        return self.payout_amount if self.payout_amount else 0.0
+
+    @property
+    def is_payout_cancelled(self) -> bool:
+        return self.status == ClaimStatusEnum.REJECTED
 
 
 # ─────────────────────────────────────────────
@@ -249,14 +275,14 @@ class DailyIncomeLog(Base):
     __tablename__ = "daily_income_logs"
 
     id                  = Column(Integer, primary_key=True, index=True)
-    claim_id            = Column(Integer, ForeignKey("claims.id"), nullable=False)
-    user_id             = Column(Integer, ForeignKey("users.id"), nullable=False)
+    claim_id            = Column(Integer, ForeignKey("claims.id"), nullable=False, index=True)
+    user_id             = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
 
-    log_date            = Column(Date, nullable=False)
-    income_earned       = Column(Float, nullable=False)       # ₹ earned that day
-    baseline_income     = Column(Float, nullable=False)       # worker's avg daily baseline
-    is_below_threshold  = Column(Boolean, nullable=False)     # True if earned < 50% of baseline
-    platform_logged_in  = Column(Boolean, nullable=False)     # True if worker logged into app
+    log_date            = Column(Date, nullable=False, index=True)
+    income_earned       = Column(Float, nullable=False)
+    baseline_income     = Column(Float, nullable=False)
+    is_below_threshold  = Column(Boolean, nullable=False)
+    platform_logged_in  = Column(Boolean, nullable=False)
 
     created_at          = Column(DateTime(timezone=True), server_default=func.now())
 
@@ -275,20 +301,19 @@ class Payout(Base):
     __tablename__ = "payouts"
 
     id               = Column(Integer, primary_key=True, index=True)
-    claim_id         = Column(Integer, ForeignKey("claims.id"), unique=True, nullable=False)
-    user_id          = Column(Integer, ForeignKey("users.id"), nullable=False)
+    claim_id         = Column(Integer, ForeignKey("claims.id"), unique=True, nullable=False, index=True)
+    user_id          = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
 
-    amount           = Column(Float, nullable=False)         # ₹ final disbursed
-    upi_id           = Column(String, nullable=False)        # worker's UPI handle
-    transaction_id   = Column(String, unique=True, nullable=True)  # from UPI gateway
-    is_sent          = Column(Boolean, default=False)
+    amount           = Column(Float, nullable=False)
+    upi_id           = Column(String, nullable=False)
+    transaction_id   = Column(String, unique=True, nullable=True)
+    is_sent          = Column(Boolean, default=False, index=True)
     sent_at          = Column(DateTime(timezone=True), nullable=True)
 
-    # Audit log fields (for reinsurer — GIC Re / Munich Re)
-    trigger_date     = Column(Date, nullable=False)          # when disaster was detected
-    alert_level      = Column(String(10), nullable=False)    # RED or ORANGE
-    days_of_loss     = Column(Integer, nullable=False)       # 5, 6, or 7
-    payout_percentage = Column(Float, nullable=False)        # 70 / 85 / 100
+    trigger_date     = Column(Date, nullable=False, index=True)
+    alert_level      = Column(String(10), nullable=False)
+    days_of_loss     = Column(Integer, nullable=False)
+    payout_percentage = Column(Float, nullable=False)
 
     created_at       = Column(DateTime(timezone=True), server_default=func.now())
 
@@ -307,8 +332,8 @@ class FraudSignal(Base):
     __tablename__ = "fraud_signals"
 
     id           = Column(Integer, primary_key=True, index=True)
-    claim_id     = Column(Integer, ForeignKey("claims.id"), nullable=False)
-    user_id      = Column(Integer, ForeignKey("users.id"), nullable=False)
+    claim_id     = Column(Integer, ForeignKey("claims.id"), nullable=False, index=True)
+    user_id      = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
 
     # Layer scores (0.0 = clean, 1.0 = highly suspicious)
     layer_1_event_verification    = Column(Float, default=0.0)   # IMD event confirmed?
@@ -355,12 +380,76 @@ class SmartWorkTip(Base):
     surge_alerts    = Column(Text, nullable=True)    # JSON string — festival/event surges
     risk_advisory   = Column(Text, nullable=True)    # plain text — IMD advisory if active
 
-    # Impact tracking
-    projected_earnings  = Column(Float, nullable=True)   # ₹ if tips followed
-    actual_earnings     = Column(Float, nullable=True)   # ₹ filled at end of week
-    followed_safety_tips = Column(Boolean, nullable=True) # did worker follow weather advice?
+    # SmartWork Report fields
+    projected_earnings   = Column(Float, nullable=True)   # ₹ if tips followed
+    actual_earnings      = Column(Float, nullable=True)   # ₹ filled at end of week
+    followed_safety_tips  = Column(Boolean, nullable=True) # did worker follow weather advice?
+
+    recommended_slots    = Column(Text, nullable=True)    # JSON — enriched time slots with demand levels
+    risk_outlook         = Column(Text, nullable=True)    # JSON — { category, warning, advice }
+    premium_projection   = Column(Text, nullable=True)    # JSON — { current, projected, impact }
+    city_insights        = Column(Text, nullable=True)    # JSON — { demand_trend, weather_risk, peak_day, description }
+    confidence_score     = Column(Float, nullable=True)   # 0.0–1.0 confidence in recommendations
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     # relationships
     user = relationship("User", back_populates="smartwork")
+
+
+class NotificationType(str, enum.Enum):
+    POLICY_CREATED  = "POLICY_CREATED"
+    POLICY_RENEWED  = "POLICY_RENEWED"
+    PREMIUM_PAID    = "PREMIUM_PAID"
+    CLAIM_OPENED    = "CLAIM_OPENED"
+    CLAIM_REJECTED  = "CLAIM_REJECTED"
+    CLAIM_APPROVED  = "CLAIM_APPROVED"
+    FRAUD_REVIEW    = "FRAUD_REVIEW"
+    PAYOUT_SENT     = "PAYOUT_SENT"
+    SMARTWORK_ALERT = "SMARTWORK_ALERT"
+    WEATHER_ALERT   = "WEATHER_ALERT"
+    SYSTEM          = "SYSTEM"
+
+
+class Notification(Base):
+    __tablename__ = "notifications"
+
+    id         = Column(Integer, primary_key=True, index=True)
+    user_id    = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    title      = Column(String(200), nullable=False)
+    message    = Column(String(500), nullable=False)
+    type       = Column(Enum(NotificationType), nullable=False)
+    is_read    = Column(Boolean, default=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    metadata_json = Column(Text, nullable=True)
+
+    user = relationship("User", backref="notifications")
+
+
+class TransactionType(str, enum.Enum):
+    PREMIUM_PAYMENT = "PREMIUM_PAYMENT"
+    CLAIM_PAYOUT    = "CLAIM_PAYOUT"
+    POLICY_RENEWAL  = "POLICY_RENEWAL"
+    REFUND          = "REFUND"
+    ADJUSTMENT      = "ADJUSTMENT"
+
+
+class TransactionStatus(str, enum.Enum):
+    SUCCESS = "SUCCESS"
+    PENDING = "PENDING"
+    FAILED  = "FAILED"
+
+
+class Transaction(Base):
+    __tablename__ = "transactions"
+
+    id               = Column(Integer, primary_key=True, index=True)
+    user_id          = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    transaction_type = Column(Enum(TransactionType), nullable=False)
+    amount           = Column(Float, nullable=False)
+    status           = Column(Enum(TransactionStatus), nullable=False, default=TransactionStatus.SUCCESS)
+    reference_id     = Column(String, nullable=True)
+    description      = Column(String(300), nullable=True)
+    created_at       = Column(DateTime(timezone=True), server_default=func.now())
+
+    user = relationship("User", backref="transactions")

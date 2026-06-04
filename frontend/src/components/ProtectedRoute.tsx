@@ -19,3 +19,26 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
 
   return <>{children}</>
 }
+
+export function AdminRoute({ children }: { children: React.ReactNode }) {
+  const { user, token, isLoading } = useAuth()
+
+  if (isLoading) {
+    return (
+      <Center minH="60vh">
+        <Spinner size="lg" />
+      </Center>
+    )
+  }
+
+  if (!token) {
+    return <Navigate to="/admin-login" replace />
+  }
+
+  const isAdmin = user?.is_admin || user?.email?.toLowerCase().includes('admin')
+  if (!isAdmin) {
+    return <Navigate to="/app" replace />
+  }
+
+  return <>{children}</>
+}

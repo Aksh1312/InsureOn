@@ -1,10 +1,12 @@
 import os
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import FileResponse, Response
 from sqlalchemy.orm import Session
 from datetime import date, timedelta
 import httpx
 from .. import models, crud, schemas
 from ..dependencies import get_db, get_current_user
+from ..services.notification_service import create_notification
 
 router = APIRouter(prefix="/policies", tags=["Policies"])
 
@@ -41,7 +43,7 @@ def issue_weekly_policy(
     """Issue a new weekly policy starting from the current Monday."""
     profile = crud.get_worker_profile(db, current_user.id)
     if not profile:
-        raise HTTPException(status_code=400, detail="Worker profile required before issuing policy")
+        raise HTTPException(status_code=400, detail="Please set up your profile first")
 
     # Check if policy already exists for this week
     today       = date.today()
@@ -52,7 +54,7 @@ def issue_weekly_policy(
     ).first()
 
     if existing:
-        raise HTTPException(status_code=400, detail="Policy already issued for this week")
+        raise HTTPException(status_code=400, detail="Plan already created for this week")
 
     policy = crud.create_policy(
         db=db,
@@ -62,6 +64,12 @@ def issue_weekly_policy(
         tier=profile.tier.value,
         weekly_coverage=profile.weekly_coverage,
         weekly_premium=profile.weekly_premium,
+    )
+    create_notification(
+        db, current_user.id,
+        "Policy Activated",
+        f"Coverage ₹{int(policy.weekly_coverage)} is now active until {policy.week_end_date.strftime('%d %b')}.",
+        models.NotificationType.POLICY_CREATED,
     )
     return policy
 
@@ -79,12 +87,18 @@ def pay_premium(
     ).first()
 
     if not policy:
-        raise HTTPException(status_code=404, detail="Policy not found")
+        raise HTTPException(status_code=404, detail="Plan not found")
     if policy.is_paid:
-        raise HTTPException(status_code=400, detail="Premium already paid")
+        raise HTTPException(status_code=400, detail="Fee already paid")
 
     _capture_policy_payment(policy, current_user)
     updated = crud.mark_policy_paid(db, policy_id)
+    create_notification(
+        db, current_user.id,
+        "Premium Paid",
+        f"₹{int(policy.weekly_premium)} paid — coverage activated until {policy.week_end_date.strftime('%d %b')}.",
+        models.NotificationType.PREMIUM_PAID,
+    )
     return updated
 
 
@@ -95,7 +109,7 @@ def get_active_policy(
 ):
     policy = crud.get_active_policy(db, current_user.id)
     if not policy:
-        raise HTTPException(status_code=404, detail="No active policy for this week")
+        raise HTTPException(status_code=404, detail="No active plan for this week")
     return policy
 
 
@@ -105,3 +119,53 @@ def get_policy_history(
     current_user: models.User = Depends(get_current_user),
 ):
     return crud.get_policy_history(db, current_user.id)
+
+
+@router.get("/{policy_id}/certificate")
+def download_policy_certificate(
+    policy_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    """Download a PDF certificate for a policy."""
+    policy = db.query(models.Policy).filter(models.Policy.id == policy_id).first()
+    if not policy:
+        raise HTTPException(status_code=404, detail="Plan not found")
+
+    is_admin = current_user.is_admin
+    if not is_admin and policy.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Unauthorized")
+
+    user = crud.get_user_by_id(db, policy.user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    profile = crud.get_worker_profile(db, policy.user_id)
+    if not profile:
+        raise HTTPException(status_code=404, detail="Worker profile not found")
+
+    risk_score = crud.get_latest_risk_score(db, policy.user_id)
+
+    from ..services.pdf_certificate import generate_policy_certificate
+    try:
+        pdf_buf = generate_policy_certificate(policy, user, profile, risk_score)
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"PDF generation failed: {str(e)}")
+
+    filename = f"InsureOn_Policy_{policy.id}.pdf"
+    return Response(
+        content=pdf_buf.read(),
+        media_type="application/pdf",
+        headers={"Content-Disposition": f"attachment; filename={filename}"},
+    )
+
+
+@router.get("/renewal-preview")
+def get_renewal_preview(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    from ..services.renewal import get_renewal_preview as _renewal_preview
+    return _renewal_preview(db, current_user.id)

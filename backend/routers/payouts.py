@@ -18,7 +18,7 @@ def get_payout_for_claim(
 
     payout = crud.get_payout_by_claim(db, claim_id)
     if not payout:
-        raise HTTPException(status_code=404, detail="No payout for this claim yet")
+        raise HTTPException(status_code=404, detail="No payment for this help request yet")
     return payout
 
 

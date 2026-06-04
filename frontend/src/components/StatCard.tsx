@@ -10,15 +10,15 @@ type StatCardProps = {
 export default function StatCard({ label, value, helper, accent }: StatCardProps) {
   return (
     <Box
-      bg="white"
+      bg="bg-surface"
       borderWidth="1px"
-      borderColor="blackAlpha.200"
+      borderColor="border-light"
       borderRadius="24px"
       p={6}
       boxShadow="sm"
     >
       <HStack justify="space-between" align="start">
-        <Text fontSize="sm" textTransform="uppercase" letterSpacing="0.12em" color="ink.500">
+        <Text fontSize="sm" textTransform="uppercase" letterSpacing="0.12em" color="text-secondary">
           {label}
         </Text>
         {accent ? (
@@ -31,11 +31,11 @@ export default function StatCard({ label, value, helper, accent }: StatCardProps
           />
         ) : null}
       </HStack>
-      <Heading mt={3} fontSize={{ base: '2xl', md: '3xl' }} fontWeight={700} color="ink.900">
+      <Heading mt={3} fontSize={{ base: '2xl', md: '3xl' }} fontWeight={700} color="text-primary">
         {value}
       </Heading>
       {helper ? (
-        <Text mt={2} fontSize="sm" color="ink.500">
+        <Text mt={2} fontSize="sm" color="text-secondary">
           {helper}
         </Text>
       ) : null}

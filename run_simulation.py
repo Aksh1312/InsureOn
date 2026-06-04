@@ -7,7 +7,7 @@ load_dotenv()
 
 SIM_URL = "http://localhost:8001"
 INSUREON_BACKEND_URL = os.getenv("INSUREON_BACKEND_URL")
-TIMEOUT = 20.0
+TIMEOUT = 120.0
 ONBOARD_LIMIT = None
 DAYS = 30
 
@@ -24,6 +24,8 @@ def _request(client: httpx.Client, method: str, path: str, **kwargs) -> dict[str
 
 with httpx.Client(base_url=SIM_URL.rstrip("/"), timeout=TIMEOUT) as client:
     status = _request(client, "GET", "/backend/status")
+    print("BACKEND URL:", os.getenv("INSUREON_BACKEND_URL"))
+    print("SIMULATION URL:", os.getenv("INSUREON_SIM_URL"))
     if not status.get("configured", False):
         raise RuntimeError(
             "Simulation backend bridge not configured: "

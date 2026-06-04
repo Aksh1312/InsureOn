@@ -11,3 +11,4 @@ APScheduler
 httpx
 psycopg2-binary
 aiofiles
+reportlab

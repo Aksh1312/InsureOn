@@ -23,6 +23,13 @@ from . import schemas
 from .routers import workers, policies, claims, payouts
 from .routers import dashboard
 from .routers import onboarding
+from .routers import mock_payments
+from .routers import admin
+from .routers import debug
+from .routers import calculator
+from .routers import notifications
+from .routers import weather_advisory
+from .routers import wallet
 
 # Services
 from .services.imd import run_imd_poll
@@ -56,6 +63,8 @@ async def scheduled_imd_poll():
     db = SessionLocal()
     try:
         await run_imd_poll(db)
+    except Exception as e:
+        logger.error("scheduled_imd_poll failed: %s", e, exc_info=True)
     finally:
         db.close()
 
@@ -64,6 +73,8 @@ def scheduled_income_check():
     db = SessionLocal()
     try:
         run_daily_income_check(db)
+    except Exception as e:
+        logger.error("scheduled_income_check failed: %s", e, exc_info=True)
     finally:
         db.close()
 
@@ -72,6 +83,8 @@ def scheduled_smartwork_tips():
     db = SessionLocal()
     try:
         generate_tips_for_all_workers(db)
+    except Exception as e:
+        logger.error("scheduled_smartwork_tips failed: %s", e, exc_info=True)
     finally:
         db.close()
 
@@ -80,6 +93,8 @@ def scheduled_weekly_repricing():
     db = SessionLocal()
     try:
         run_weekly_repricing(db)
+    except Exception as e:
+        logger.error("scheduled_weekly_repricing failed: %s", e, exc_info=True)
     finally:
         db.close()
 
@@ -98,8 +113,8 @@ def bootstrap_existing_users():
                 zone = assign_zone(user.region)
                 tier = assign_tier(avg_weekly_hours)
                 avg_daily_income = round(user.income / 6, 2)
-                coverage = calculate_coverage(user.income)
-                base_premium = calculate_base_premium(coverage, zone.value)
+                coverage = calculate_coverage(avg_weekly_hours, user.income)
+                base_premium = calculate_base_premium(avg_weekly_hours, zone.value, user.income)
 
                 crud.create_worker_profile(
                     db=db,
@@ -110,7 +125,7 @@ def bootstrap_existing_users():
                     avg_weekly_hours=avg_weekly_hours,
                     avg_weekly_income=user.income,
                     avg_daily_income=avg_daily_income,
-                    primary_shift=models.WorkShiftEnum.AFTERNOON.value,
+                    primary_shift=None,
                     is_multi_platform=False,
                     weekly_coverage=coverage,
                     weekly_premium=base_premium,
@@ -127,12 +142,7 @@ def bootstrap_existing_users():
                     has_no_claims=has_no_claims,
                     safe_worker=safe_worker,
                 )
-                final_premium = calculate_final_premium(
-                    base_premium,
-                    risk.multiplier,
-                    applied_loadings=loadings,
-                    applied_discounts=discounts,
-                )
+                final_premium = base_premium
                 profile = crud.update_worker_profile(db, user.id, weekly_premium=final_premium)
 
             existing_policy = db.query(models.Policy).filter(
@@ -194,11 +204,11 @@ async def lifespan(app: FastAPI):
     )
     scheduler.start()
     bootstrap_existing_users()
-    print("✅ Scheduler started")
-    print("   → IMD poll every 15 min")
-    print("   → Income check every midnight")
-    print("   → SmartWork tips every Monday 8 AM")
-    print("   → Weekly repricing every Monday 6 AM")
+    print("[OK] Scheduler started")
+    print("   -> IMD poll every 15 min")
+    print("   -> Income check every midnight")
+    print("   -> SmartWork tips every Monday 8 AM")
+    print("   -> Weekly repricing every Monday 6 AM")
     yield
     scheduler.shutdown()
     print("Scheduler stopped")
@@ -263,8 +273,8 @@ def signup(body: schemas.SignupRequest, db: Session = Depends(get_db)):
     avg_weekly_hours = body.avg_weekly_hours or 22.0
     tier = assign_tier(avg_weekly_hours)
     avg_daily_income = round(user.income / 6, 2)
-    coverage = calculate_coverage(user.income)
-    base_premium = calculate_base_premium(coverage, zone.value)
+    coverage = calculate_coverage(avg_weekly_hours, user.income)
+    base_premium = calculate_base_premium(avg_weekly_hours, zone.value, user.income)
     risk_score = None
 
     profile = crud.create_worker_profile(
@@ -276,7 +286,7 @@ def signup(body: schemas.SignupRequest, db: Session = Depends(get_db)):
         avg_weekly_hours=avg_weekly_hours,
         avg_weekly_income=user.income,
         avg_daily_income=avg_daily_income,
-        primary_shift=(body.primary_shift or models.WorkShiftEnum.AFTERNOON).value,
+        primary_shift=body.primary_shift.value if body.primary_shift else None,
         is_multi_platform=bool(body.is_multi_platform),
         weekly_coverage=coverage,
         weekly_premium=base_premium,
@@ -290,12 +300,7 @@ def signup(body: schemas.SignupRequest, db: Session = Depends(get_db)):
         has_no_claims=True,
         safe_worker=False,
     )
-    final_premium = calculate_final_premium(
-        base_premium,
-        risk_score.multiplier,
-        applied_loadings=loadings,
-        applied_discounts=discounts,
-    )
+    final_premium = base_premium
     profile = crud.update_worker_profile(db, user.id, weekly_premium=final_premium)
 
     policy = crud.create_policy(
@@ -351,6 +356,13 @@ app.include_router(claims.router)
 app.include_router(payouts.router)
 app.include_router(dashboard.router)
 app.include_router(onboarding.router)
+app.include_router(mock_payments.router)
+app.include_router(admin.router)
+app.include_router(debug.router)
+app.include_router(calculator.router)
+app.include_router(notifications.router)
+app.include_router(weather_advisory.router)
+app.include_router(wallet.router)
 
 
 # ─────────────────────────────────────────────

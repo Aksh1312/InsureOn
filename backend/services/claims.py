@@ -8,9 +8,10 @@ Runs every midnight for all active (monitoring) claims.
 - When counter hits 5 → mark payout_ready and calculate amount
 """
 
-from datetime import date
+from datetime import date, timedelta
 import os
 import re
+from typing import Optional
 from collections import Counter
 
 import httpx
@@ -18,6 +19,9 @@ from sqlalchemy.orm import Session
 from .. import models
 from .. import crud
 from .payout import initiate_payout
+from .audit import lifecycle_log, audit_error
+from .state_machine import is_terminal, can_monitor
+from .notification_service import create_notification
 
 
 SIM_BASE_URL = os.getenv("INSUREON_SIM_URL", "http://127.0.0.1:8001").rstrip("/")
@@ -34,11 +38,18 @@ def run_daily_income_check(db: Session):
         models.Claim.status == models.ClaimStatusEnum.MONITORING
     ).all()
 
+    lifecycle_log("income_check_start", f"Processing {len(active_claims)} active claims", sim_day=date.today().isoformat())
+
     results = []
     for claim in active_claims:
-        result = process_claim_income(db, claim)
-        results.append(result)
+        try:
+            result = process_claim_income(db, claim)
+            results.append(result)
+        except Exception as e:
+            audit_error("process_claim_income", e, claim_id=claim.id, worker_id=claim.user_id)
+            results.append({"claim_id": claim.id, "status": "error", "error": str(e)})
 
+    lifecycle_log("income_check_complete", f"Processed {len(results)} claims", sim_day=date.today().isoformat())
     return results
 
 
@@ -65,6 +76,9 @@ def process_claim_income(db: Session, claim: models.Claim) -> dict:
     4. If counter >= 5 → trigger payout
     5. Handle inactivity scenarios (A, B, C, D)
     """
+    if is_terminal(claim.status):
+        return {"claim_id": claim.id, "status": "skipped", "reason": "terminal_state"}
+
     user    = crud.get_user_by_id(db, claim.user_id)
     profile = crud.get_worker_profile(db, claim.user_id)
 
@@ -75,7 +89,6 @@ def process_claim_income(db: Session, claim: models.Claim) -> dict:
     platform_logged_in = _check_platform_login(db, claim.user_id)
     baseline          = profile.avg_daily_income
 
-    # Log today's income
     crud.create_daily_income_log(
         db=db,
         claim_id=claim.id,
@@ -88,27 +101,45 @@ def process_claim_income(db: Session, claim: models.Claim) -> dict:
 
     is_below_threshold = today_income < (baseline * 0.50)
 
-    # Inactivity scenario detection
     scenario = _detect_inactivity_scenario(
-        db, claim.user_id, today_income, platform_logged_in
+        db, claim.user_id, today_income, platform_logged_in, claim
     )
 
     if scenario == "D":
-        # Worker was already inactive before the disaster — reject
         crud.update_claim_status(db, claim.id, models.ClaimStatusEnum.REJECTED)
+        create_notification(
+            db, claim.user_id,
+            "Claim #%d Rejected" % claim.id,
+            "Your claim was not approved due to inactivity before the event.",
+            models.NotificationType.CLAIM_REJECTED,
+            metadata_json='{"claim_id": %d}' % claim.id,
+        )
         return {"claim_id": claim.id, "status": "rejected", "reason": "scenario_D"}
 
     if scenario == "C":
-        # Logged in but not earning — possible voluntary stoppage
         crud.update_claim_status(db, claim.id, models.ClaimStatusEnum.MANUAL_REVIEW)
+        create_notification(
+            db, claim.user_id,
+            "Claim #%d Requires Review" % claim.id,
+            "Your claim has been sent for manual review.",
+            models.NotificationType.FRAUD_REVIEW,
+            metadata_json='{"claim_id": %d}' % claim.id,
+        )
         return {"claim_id": claim.id, "status": "manual_review", "reason": "scenario_C"}
 
-    # Scenarios A and B — genuine income loss
     if is_below_threshold:
         updated_claim = crud.increment_loss_counter(db, claim.id)
+        if not updated_claim:
+            return {"claim_id": claim.id, "status": "error", "reason": "claim_not_found"}
 
         if updated_claim.status == models.ClaimStatusEnum.PAYOUT_READY:
-            # Trigger payout automatically
+            create_notification(
+                db, claim.user_id,
+                "Claim #%d Approved" % claim.id,
+                "5 consecutive loss days confirmed. Payout is being processed.",
+                models.NotificationType.CLAIM_APPROVED,
+                metadata_json='{"claim_id": %d}' % claim.id,
+            )
             initiate_payout(db, updated_claim)
             return {
                 "claim_id": claim.id,
@@ -122,13 +153,12 @@ def process_claim_income(db: Session, claim: models.Claim) -> dict:
             "loss_counter": updated_claim.loss_counter,
         }
     else:
-        # Income recovered — reset counter
         crud.reset_loss_counter(db, claim.id)
         return {"claim_id": claim.id, "status": "monitoring", "loss_counter": 0}
 
 
 def _detect_inactivity_scenario(
-    db: Session, user_id: int, today_income: float, platform_logged_in: bool
+    db: Session, user_id: int, today_income: float, platform_logged_in: bool, claim: Optional[models.Claim] = None
 ) -> str:
     """
     Scenario A — disaster forced zero income (eligible)
@@ -138,27 +168,24 @@ def _detect_inactivity_scenario(
 
     Returns: "A", "B", "C", or "D"
     """
-    from datetime import timedelta
-
-    # Check if worker was active in the 7 days before the claim
-    seven_days_ago = date.today() - timedelta(days=7)
-    recent_logs = db.query(models.DailyIncomeLog).filter(
+    monitoring_start = claim.monitoring_start if claim else date.today()
+    lookback_start = monitoring_start - timedelta(days=7)
+    pre_claim_logs = db.query(models.DailyIncomeLog).filter(
         models.DailyIncomeLog.user_id == user_id,
-        models.DailyIncomeLog.log_date >= seven_days_ago,
+        models.DailyIncomeLog.log_date >= lookback_start,
+        models.DailyIncomeLog.log_date < monitoring_start,
     ).all()
 
-    had_pre_event_activity = any(log.income_earned > 0 for log in recent_logs)
-
-    if not had_pre_event_activity:
-        return "D"  # was already inactive
+    if pre_claim_logs and not any(log.income_earned > 0 for log in pre_claim_logs):
+        return "D"
 
     if today_income == 0 and not platform_logged_in:
-        return "A"  # disaster or platform outage
+        return "A"
 
     if today_income == 0 and platform_logged_in:
-        return "C"  # logged in but chose not to work
+        return "C"
 
-    return "A"  # earning something, genuine partial loss
+    return "A"
 
 
 def _resolve_sim_worker_id(db: Session, user_id: int) -> int | None:

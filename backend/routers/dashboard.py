@@ -22,6 +22,13 @@ def get_dashboard_summary(
     profile = crud.get_worker_profile(db, current_user.id)
     risk_score = crud.get_latest_risk_score(db, current_user.id)
     smartwork_tip = crud.get_latest_smartwork_tip(db, current_user.id)
+    if smartwork_tip and any(getattr(smartwork_tip, f) is None for f in ("recommended_slots", "risk_outlook", "premium_projection", "city_insights", "confidence_score")):
+        from ..services.smartwork import generate_weekly_tip
+        try:
+            generate_weekly_tip(db, current_user.id, send_notification=False)
+            smartwork_tip = crud.get_latest_smartwork_tip(db, current_user.id)
+        except Exception:
+            pass
     active_policy = crud.get_active_policy(db, current_user.id)
     policy_history = crud.get_policy_history(db, current_user.id)
     active_claim = crud.get_active_claim(db, current_user.id)
@@ -31,40 +38,23 @@ def get_dashboard_summary(
     payout_history = db.query(models.Payout).filter(models.Payout.user_id == current_user.id).all()
 
     premium_breakdown = None
-    if profile and risk_score:
+    if profile:
         zone = profile.zone.value if hasattr(profile.zone, "value") else profile.zone
         tier = profile.tier.value if hasattr(profile.tier, "value") else profile.tier
-        weekly_income = profile.avg_weekly_income or float(current_user.income)
-        weekly_coverage = calculate_coverage(weekly_income)
-        base_premium = calculate_base_premium(weekly_coverage, zone)
-        six_months_ago = date.today() - timedelta(days=180)
-        has_no_claims = crud.count_closed_claims_since(db, current_user.id, six_months_ago) == 0
-        latest_tip = crud.get_latest_smartwork_tip(db, current_user.id)
-        safe_worker = bool(latest_tip and latest_tip.followed_safety_tips)
-        loadings, discounts = get_pricing_adjustments(
-            is_multi_platform=bool(profile.is_multi_platform),
-            risk_category=risk_score.risk_category,
-            pincode=profile.pincode,
-            has_no_claims=has_no_claims,
-            safe_worker=safe_worker,
-        )
-        weekly_premium = calculate_final_premium(
-            base_premium,
-            risk_score.multiplier,
-            applied_loadings=loadings,
-            applied_discounts=discounts,
-        )
+        weekly_coverage = calculate_coverage(profile.avg_weekly_hours)
+        base_premium = calculate_base_premium(profile.avg_weekly_hours, zone)
+        weekly_premium = calculate_final_premium(base_premium)
         premium_breakdown = {
             "zone": zone,
             "tier": tier,
             "avg_weekly_hours": profile.avg_weekly_hours,
-            "avg_weekly_income": weekly_income,
+            "avg_weekly_income": profile.avg_weekly_income or float(current_user.income),
             "weekly_coverage": weekly_coverage,
             "base_premium": base_premium,
-            "risk_multiplier": risk_score.multiplier,
+            "risk_multiplier": 1.0,
             "weekly_premium": weekly_premium,
-            "applied_loadings": loadings,
-            "applied_discounts": discounts,
+            "applied_loadings": [],
+            "applied_discounts": [],
         }
 
     return {

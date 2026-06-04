@@ -21,13 +21,13 @@ class SignupRequest(BaseModel):
     pincode: str
     upi_id: str
     avg_weekly_hours: Optional[float] = 22.0
-    primary_shift: Optional[WorkShiftEnum] = WorkShiftEnum.AFTERNOON
+    primary_shift: Optional[WorkShiftEnum] = None
     is_multi_platform: Optional[bool] = False
 
     @field_validator("income")
     def income_must_be_positive(cls, v):
         if v < 1500:
-            raise ValueError("Weekly income must be at least ₹1,500")
+            raise ValueError("Weekly income must be at least Rs. 1,500")
         return v
 
     @field_validator("avg_weekly_hours")
@@ -60,6 +60,7 @@ class UserOut(BaseModel):
     platform: PlatformEnum
     region: str
     income: int
+    is_admin: bool = False
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
@@ -91,6 +92,7 @@ class WorkerProfileUpdate(BaseModel):
     avg_weekly_income: Optional[float] = None
     primary_shift: Optional[WorkShiftEnum] = None
     is_multi_platform: Optional[bool] = None
+    pincode: Optional[str] = None
 
 
 # ─────────────────────────────────────────────
@@ -197,6 +199,13 @@ class ClaimOut(BaseModel):
     is_fraud_flagged: bool
     created_at: datetime
 
+    alert_level: Optional[str] = None
+    alert_name: Optional[str] = None
+    zone: Optional[str] = None
+    resolved: Optional[bool] = None
+    claim_amount: Optional[float] = None
+    is_payout_cancelled: Optional[bool] = None
+
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -286,6 +295,11 @@ class SmartWorkTipOut(BaseModel):
     projected_earnings: Optional[float]
     actual_earnings: Optional[float]
     followed_safety_tips: Optional[bool]
+    recommended_slots: Optional[str]
+    risk_outlook: Optional[str]
+    premium_projection: Optional[str]
+    city_insights: Optional[str]
+    confidence_score: Optional[float]
 
     model_config = ConfigDict(from_attributes=True)
 

@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 
 from .. import models, crud
 from .risk import calculate_and_save_risk_score
+from .audit import lifecycle_log, audit_error
 from .premium import (
     assign_zone,
     assign_tier,
@@ -27,68 +28,72 @@ def run_weekly_repricing(db: Session, *, issue_policies: bool = True, mark_paid:
     policies_issued = 0
 
     workers = db.query(models.User).filter(models.User.is_active == True).all()
+    lifecycle_log("weekly_repricing_start", f"Processing {len(workers)} users", sim_day=today.isoformat())
     for user in workers:
-        profile = crud.get_worker_profile(db, user.id)
-        if not profile:
-            continue
+        try:
+            profile = crud.get_worker_profile(db, user.id)
+            if not profile:
+                continue
 
-        zone = assign_zone(user.region)
-        tier = assign_tier(profile.avg_weekly_hours)
-        weekly_income = profile.avg_weekly_income or float(user.income)
-        avg_daily_income = round(weekly_income / 6, 2)
-        coverage = calculate_coverage(weekly_income)
-        base_premium = calculate_base_premium(coverage, zone.value)
+            zone = assign_zone(user.region)
+            tier = assign_tier(profile.avg_weekly_hours)
+            weekly_income = profile.avg_weekly_income or float(user.income)
+            avg_daily_income = round(weekly_income / 6, 2)
+            coverage = calculate_coverage(profile.avg_weekly_hours, weekly_income)
+            base_premium = calculate_base_premium(profile.avg_weekly_hours, zone.value, weekly_income)
 
-        crud.update_worker_profile(
-            db,
-            user.id,
-            zone=zone.value,
-            tier=tier.value,
-            avg_weekly_income=weekly_income,
-            avg_daily_income=avg_daily_income,
-            weekly_coverage=coverage,
-        )
+            crud.update_worker_profile(
+                db,
+                user.id,
+                zone=zone.value,
+                tier=tier.value,
+                avg_weekly_income=weekly_income,
+                avg_daily_income=avg_daily_income,
+                weekly_coverage=coverage,
+            )
 
-        risk = calculate_and_save_risk_score(db, user.id)
-        six_months_ago = today - timedelta(days=180)
-        has_no_claims = crud.count_closed_claims_since(db, user.id, six_months_ago) == 0
-        latest_tip = crud.get_latest_smartwork_tip(db, user.id)
-        safe_worker = bool(latest_tip and latest_tip.followed_safety_tips)
+            risk = calculate_and_save_risk_score(db, user.id)
+            six_months_ago = today - timedelta(days=180)
+            has_no_claims = crud.count_closed_claims_since(db, user.id, six_months_ago) == 0
+            latest_tip = crud.get_latest_smartwork_tip(db, user.id)
+            safe_worker = bool(latest_tip and latest_tip.followed_safety_tips)
 
-        loadings, discounts = get_pricing_adjustments(
-            is_multi_platform=bool(profile.is_multi_platform),
-            risk_category=risk.risk_category,
-            pincode=profile.pincode,
-            has_no_claims=has_no_claims,
-            safe_worker=safe_worker,
-        )
-        final_premium = calculate_final_premium(
-            base_premium,
-            risk.multiplier,
-            applied_loadings=loadings,
-            applied_discounts=discounts,
-        )
-        crud.update_worker_profile(db, user.id, weekly_premium=final_premium)
-        updated_profiles += 1
+            loadings, discounts = get_pricing_adjustments(
+                is_multi_platform=bool(profile.is_multi_platform),
+                risk_category=risk.risk_category,
+                pincode=profile.pincode,
+                has_no_claims=has_no_claims,
+                safe_worker=safe_worker,
+            )
+            final_premium = calculate_final_premium(
+                base_premium,
+                risk.multiplier,
+                applied_loadings=loadings,
+                applied_discounts=discounts,
+            )
+            crud.update_worker_profile(db, user.id, weekly_premium=final_premium)
+            updated_profiles += 1
 
-        if issue_policies:
-            existing_policy = db.query(models.Policy).filter(
-                models.Policy.user_id == user.id,
-                models.Policy.week_start_date == week_start,
-            ).first()
-            if not existing_policy:
-                policy = crud.create_policy(
-                    db=db,
-                    user_id=user.id,
-                    week_start_date=week_start,
-                    zone=zone.value,
-                    tier=tier.value,
-                    weekly_coverage=coverage,
-                    weekly_premium=final_premium,
-                )
-                if mark_paid:
-                    crud.mark_policy_paid(db, policy.id)
-                policies_issued += 1
+            if issue_policies:
+                existing_policy = db.query(models.Policy).filter(
+                    models.Policy.user_id == user.id,
+                    models.Policy.week_start_date == week_start,
+                ).first()
+                if not existing_policy:
+                    policy = crud.create_policy(
+                        db=db,
+                        user_id=user.id,
+                        week_start_date=week_start,
+                        zone=zone.value,
+                        tier=tier.value,
+                        weekly_coverage=coverage,
+                        weekly_premium=final_premium,
+                    )
+                    if mark_paid:
+                        crud.mark_policy_paid(db, policy.id)
+                    policies_issued += 1
+        except Exception as e:
+            audit_error(f"weekly_repricing:user_{user.id}", e, worker_id=user.id)
 
     return {
         "updated_profiles": updated_profiles,

@@ -1,4 +1,5 @@
 import os
+from datetime import date
 from fastapi import APIRouter, Depends, Header, HTTPException
 from sqlalchemy.orm import Session
 from .. import models, crud, schemas
@@ -6,6 +7,7 @@ from ..dependencies import get_db, get_current_user
 from ..services.fraud import evaluate_claim
 from ..services.imd import open_claims_for_trigger
 from ..services.claims import run_simulation_monitoring_cycle
+from ..services.notification_service import create_notification
 
 router = APIRouter(prefix="/claims", tags=["Claims"])
 SIM_TEST_API_KEY = os.getenv("SIM_TEST_API_KEY")
@@ -19,7 +21,7 @@ def get_active_claim(
     """Get the worker's currently open (monitoring) claim."""
     claim = crud.get_active_claim(db, current_user.id)
     if not claim:
-        raise HTTPException(status_code=404, detail="No active claim")
+        raise HTTPException(status_code=404, detail="No active help request")
     return claim
 
 
@@ -39,7 +41,7 @@ def get_claim(
 ):
     claim = crud.get_claim_by_id(db, claim_id)
     if not claim or claim.user_id != current_user.id:
-        raise HTTPException(status_code=404, detail="Claim not found")
+        raise HTTPException(status_code=404,         detail="Help request not found")
     return claim
 
 
@@ -51,7 +53,7 @@ def get_income_logs(
 ):
     claim = crud.get_claim_by_id(db, claim_id)
     if not claim or claim.user_id != current_user.id:
-        raise HTTPException(status_code=404, detail="Claim not found")
+        raise HTTPException(status_code=404,         detail="Help request not found")
     return crud.get_income_logs_for_claim(db, claim_id)
 
 
@@ -63,10 +65,10 @@ def get_fraud_signal(
 ):
     claim = crud.get_claim_by_id(db, claim_id)
     if not claim or claim.user_id != current_user.id:
-        raise HTTPException(status_code=404, detail="Claim not found")
+        raise HTTPException(status_code=404,         detail="Help request not found")
     signal = crud.get_fraud_signal_by_claim(db, claim_id)
     if not signal:
-        raise HTTPException(status_code=404, detail="Fraud signal not evaluated yet")
+        raise HTTPException(status_code=404, detail="Fake check not done yet")
     return signal
 
 
@@ -79,7 +81,7 @@ def run_fraud_evaluation(
     """Manually trigger fraud evaluation on a claim (admin/ops use)."""
     claim = crud.get_claim_by_id(db, claim_id)
     if not claim or claim.user_id != current_user.id:
-        raise HTTPException(status_code=404, detail="Claim not found")
+        raise HTTPException(status_code=404,         detail="Help request not found")
     return evaluate_claim(db, claim)
 
 
@@ -122,3 +124,59 @@ def process_monitoring_from_simulation(
 
     summary = run_simulation_monitoring_cycle(db)
     return schemas.SimMonitoringProcessResponse(**summary)
+
+
+@router.post("/file", response_model=schemas.ClaimOut)
+def file_claim(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    """File a new claim for the current worker. Requires an active policy and no existing active claim."""
+    if current_user.is_admin:
+        raise HTTPException(status_code=400, detail="Admins cannot file claims")
+
+    policy = crud.get_active_policy(db, current_user.id)
+    if not policy:
+        raise HTTPException(status_code=400, detail="No active policy. Issue a policy first.")
+
+    existing = db.query(models.Claim).filter(
+        models.Claim.user_id == current_user.id,
+        models.Claim.status.in_([
+            models.ClaimStatusEnum.MONITORING,
+            models.ClaimStatusEnum.MANUAL_REVIEW,
+            models.ClaimStatusEnum.PAYOUT_READY,
+        ])
+    ).first()
+    if existing:
+        raise HTTPException(status_code=400, detail="You already have an active claim")
+
+    trigger = crud.create_imd_trigger(
+        db=db,
+        district="Manual Filing",
+        alert_color="NONE",
+        zone_triggered=policy.zone or "A",
+    )
+
+    claim = models.Claim(
+        user_id=current_user.id,
+        policy_id=policy.id,
+        trigger_event_id=trigger.id,
+        status=models.ClaimStatusEnum.MANUAL_REVIEW,
+        loss_counter=0,
+        monitoring_start=date.today(),
+        fraud_probability=0.0,
+        is_fraud_flagged=False,
+    )
+    db.add(claim)
+    db.commit()
+    db.refresh(claim)
+
+    create_notification(
+        db, current_user.id,
+        "Claim #%d Requires Review" % claim.id,
+        "Your claim has been submitted and is pending review by the safety team.",
+        models.NotificationType.FRAUD_REVIEW,
+        metadata_json='{"claim_id": %d}' % claim.id,
+    )
+
+    return claim

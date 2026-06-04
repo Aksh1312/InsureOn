@@ -10,7 +10,7 @@ export default function SectionTitle({ kicker, title, subtitle }: SectionTitlePr
   return (
     <Box>
       {kicker ? (
-        <Text textTransform="uppercase" letterSpacing="0.2em" fontSize="xs" color="ink.500">
+        <Text textTransform="uppercase" letterSpacing="0.2em" fontSize="xs" color="text-secondary">
           {kicker}
         </Text>
       ) : null}
@@ -18,12 +18,12 @@ export default function SectionTitle({ kicker, title, subtitle }: SectionTitlePr
         mt={kicker ? 2 : 0}
         fontSize={{ base: '2xl', md: '4xl' }}
         fontWeight={700}
-        color="ink.900"
+        color="text-primary"
       >
         {title}
       </Heading>
       {subtitle ? (
-        <Text mt={3} fontSize={{ base: 'md', md: 'lg' }} color="ink.600">
+        <Text mt={3} fontSize={{ base: 'md', md: 'lg' }} color="text-secondary">
           {subtitle}
         </Text>
       ) : null}
